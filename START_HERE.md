@@ -50,11 +50,11 @@ npm install
 npm run dev
 ```
 
-**Verify**: Visit http://localhost:3000 (should see landing page)
+**Verify**: Visit http://localhost:3001 (should see landing page)
 
 ### Step 3: Test the App (1 min)
 
-1. Open http://localhost:3000
+1. Open http://localhost:3001
 2. Click "Get Started"
 3. Login with: **admin@example.com** / **admin123**
 4. Explore the dashboard and digest feed
@@ -144,7 +144,7 @@ After running `init_db.py`:
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| Frontend | http://localhost:3000 | Web application |
+| Frontend | http://localhost:3001 | Web application |
 | Backend API | http://localhost:8000 | REST API |
 | API Docs | http://localhost:8000/docs | Swagger UI |
 | ReDoc | http://localhost:8000/redoc | Alternative docs |
@@ -361,7 +361,7 @@ colors: {
 Before moving forward, verify:
 
 - [ ] ✅ Backend running at http://localhost:8000
-- [ ] ✅ Frontend running at http://localhost:3000
+- [ ] ✅ Frontend running at http://localhost:3001
 - [ ] ✅ Can login with test account
 - [ ] ✅ Can view digest feed
 - [ ] ✅ Can update profile in settings

@@ -40,13 +40,13 @@ Backend should be accessible at `http://localhost:8000`
 npm run dev
 ```
 
-Frontend will be available at `http://localhost:3000`
+Frontend will be available at `http://localhost:3001`
 
 ## Testing the Application
 
 ### 1. Create an Account
 
-1. Navigate to `http://localhost:3000`
+1. Navigate to `http://localhost:3001`
 2. Click "Get Started" or "Sign In"
 3. Go to Register page
 4. Fill in:
@@ -233,7 +233,7 @@ Response: DigestResponse with items array
 **Solution:**
 1. Verify backend is running: `curl http://localhost:8000/health`
 2. Check `.env.local` has correct API URL
-3. Ensure no CORS issues (backend should allow `http://localhost:3000`)
+3. Ensure no CORS issues (backend should allow `http://localhost:3001`)
 
 ### Problem: Authentication not working
 
@@ -308,7 +308,7 @@ touch app/new-page/page.tsx
 ```bash
 # Manual testing:
 npm run dev
-# Test in browser at http://localhost:3000
+# Test in browser at http://localhost:3001
 
 # Build test:
 npm run build
@@ -344,7 +344,7 @@ npx prettier --write .
 docker build -t market-intel-frontend .
 
 # Run container
-docker run -p 3000:3000 \
+docker run -p 3001:3000 \
   -e NEXT_PUBLIC_API_URL=https://api.example.com/api/v1 \
   market-intel-frontend
 ```

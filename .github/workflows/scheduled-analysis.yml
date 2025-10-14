@@ -1,0 +1,206 @@
+name: Scheduled Market Analysis
+
+on:
+  # Disabled by default - enable after AWS ECS setup
+  # schedule:
+  #   # Run at 7:00 AM Arizona Time (14:00 UTC) Monday-Friday
+  #   # Arizona doesn't observe daylight saving time, so it's always UTC-7
+  #   - cron: '0 14 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      max_items:
+        description: 'Maximum analysis items (default: 30)'
+        required: false
+        default: '30'
+        type: string
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: market-intel-backend
+  ECS_CLUSTER: market-intel-cluster
+  ECS_TASK_DEFINITION: market-intel-task
+
+jobs:
+  scheduled-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Get AWS Account ID and VPC Info
+      id: aws-info
+      run: |
+        ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+        echo "account-id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
+
+        # Get default VPC and subnet
+        VPC_ID=$(aws ec2 describe-vpcs --filters Name=is-default,Values=true --query 'Vpcs[0].VpcId' --output text)
+        SUBNET_ID=$(aws ec2 describe-subnets --filters Name=vpc-id,Values=$VPC_ID --query 'Subnets[0].SubnetId' --output text)
+
+        echo "vpc-id=$VPC_ID" >> $GITHUB_OUTPUT
+        echo "subnet-id=$SUBNET_ID" >> $GITHUB_OUTPUT
+
+        echo "Account ID: $ACCOUNT_ID"
+        echo "VPC ID: $VPC_ID"
+        echo "Subnet ID: $SUBNET_ID"
+
+    - name: Get or create security group
+      id: security-group
+      run: |
+        # Try to find existing security group
+        SG_ID=$(aws ec2 describe-security-groups \
+          --filters Name=group-name,Values=market-intel-sg \
+          --query 'SecurityGroups[0].GroupId' \
+          --output text 2>/dev/null || echo "None")
+
+        if [[ "$SG_ID" == "None" ]]; then
+          echo "Creating security group..."
+          SG_ID=$(aws ec2 create-security-group \
+            --group-name market-intel-sg \
+            --description "Market Intelligence Platform security group" \
+            --vpc-id ${{ steps.aws-info.outputs.vpc-id }} \
+            --query 'GroupId' \
+            --output text)
+
+          # Add outbound rules
+          aws ec2 authorize-security-group-egress \
+            --group-id $SG_ID \
+            --protocol tcp \
+            --port 443 \
+            --cidr 0.0.0.0/0
+
+          aws ec2 authorize-security-group-egress \
+            --group-id $SG_ID \
+            --protocol tcp \
+            --port 80 \
+            --cidr 0.0.0.0/0
+
+          aws ec2 authorize-security-group-egress \
+            --group-id $SG_ID \
+            --protocol tcp \
+            --port 587 \
+            --cidr 0.0.0.0/0
+
+          echo "✅ Security group created: $SG_ID"
+        else
+          echo "✅ Using existing security group: $SG_ID"
+        fi
+
+        echo "security-group-id=$SG_ID" >> $GITHUB_OUTPUT
+
+    - name: Get latest task definition
+      id: task-def
+      run: |
+        TASK_DEF_ARN=$(aws ecs describe-task-definition \
+          --task-definition ${{ env.ECS_TASK_DEFINITION }} \
+          --query 'taskDefinition.taskDefinitionArn' \
+          --output text)
+
+        echo "task-definition-arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
+        echo "Latest task definition: $TASK_DEF_ARN"
+
+    - name: Run scheduled analysis task
+      id: run-task
+      run: |
+        echo "📊 Running scheduled market analysis at 7:00 AM Arizona Time"
+
+        # Build command array
+        COMMAND_ARGS=("python" "scripts/send_daily_digest.py" "--email" "${{ secrets.DIGEST_RECIPIENT_EMAIL }}")
+
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ -n "${{ github.event.inputs.max_items }}" ]]; then
+            COMMAND_ARGS+=("--max-items" "${{ github.event.inputs.max_items }}")
+          fi
+        fi
+
+        # Convert to JSON
+        COMMAND_JSON=$(printf '"%s",' "${COMMAND_ARGS[@]}")
+        COMMAND_JSON="[${COMMAND_JSON%,}]"
+
+        echo "Running analysis with command: ${COMMAND_ARGS[*]}"
+
+        # Run task
+        TASK_ARN=$(aws ecs run-task \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --task-definition ${{ steps.task-def.outputs.task-definition-arn }} \
+          --launch-type FARGATE \
+          --network-configuration "awsvpcConfiguration={subnets=[${{ steps.aws-info.outputs.subnet-id }}],securityGroups=[${{ steps.security-group.outputs.security-group-id }}],assignPublicIp=ENABLED}" \
+          --overrides "{\"containerOverrides\":[{\"name\":\"market-intel-container\",\"command\":$COMMAND_JSON}]}" \
+          --query 'tasks[0].taskArn' \
+          --output text)
+
+        echo "task-arn=$TASK_ARN" >> $GITHUB_OUTPUT
+        echo "✅ Scheduled analysis task started: $TASK_ARN"
+
+    - name: Wait for task completion
+      run: |
+        TASK_ARN=${{ steps.run-task.outputs.task-arn }}
+        echo "Waiting for analysis task to complete: $TASK_ARN"
+
+        # Wait up to 15 minutes
+        for i in {1..90}; do
+          STATUS=$(aws ecs describe-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --tasks $TASK_ARN \
+            --query 'tasks[0].lastStatus' \
+            --output text)
+
+          echo "Attempt $i: Task status = $STATUS"
+
+          if [[ "$STATUS" == "STOPPED" ]]; then
+            EXIT_CODE=$(aws ecs describe-tasks \
+              --cluster ${{ env.ECS_CLUSTER }} \
+              --tasks $TASK_ARN \
+              --query 'tasks[0].containers[0].exitCode' \
+              --output text)
+
+            echo "Analysis task completed with exit code: $EXIT_CODE"
+
+            if [[ "$EXIT_CODE" == "0" ]]; then
+              echo "✅ Scheduled market analysis completed successfully!"
+            else
+              echo "❌ Analysis failed with exit code: $EXIT_CODE"
+              exit 1
+            fi
+            break
+          fi
+
+          if [[ $i -eq 90 ]]; then
+            echo "❌ Task did not complete within 15 minutes"
+            exit 1
+          fi
+
+          sleep 10
+        done
+
+    - name: Get task logs
+      if: always()
+      run: |
+        TASK_ARN=${{ steps.run-task.outputs.task-arn }}
+        TASK_ID=$(basename $TASK_ARN)
+
+        echo "Getting analysis logs for task: $TASK_ID"
+
+        aws logs get-log-events \
+          --log-group-name "/ecs/market-intel" \
+          --log-stream-name "ecs/market-intel-container/$TASK_ID" \
+          --query 'events[-50:].message' \
+          --output text || echo "No logs available yet"
+
+    - name: Display completion summary
+      if: success()
+      run: |
+        echo "🎉 Scheduled market analysis completed successfully!"
+        echo ""
+        echo "📊 Full market analysis complete"
+        echo "📧 Results emailed to configured recipient"
+        echo ""
+        echo "📅 Next analysis: Tomorrow at 7:00 AM Arizona Time"

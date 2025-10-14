@@ -56,7 +56,7 @@ NODE_ENV=development
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3001](http://localhost:3001) in your browser.
 
 ## Project Structure
 
@@ -242,7 +242,7 @@ The app will be optimized for production with:
 docker build -t market-intel-frontend .
 
 # Run container
-docker run -p 3000:3000 \
+docker run -p 3001:3000 \
   -e NEXT_PUBLIC_API_URL=https://api.example.com/api/v1 \
   market-intel-frontend
 ```

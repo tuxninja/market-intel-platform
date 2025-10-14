@@ -101,7 +101,7 @@ npm install  # First time only
 npm run dev
 
 # 6. Access application
-# Frontend: http://localhost:3000
+# Frontend: http://localhost:3001
 # Backend API: http://localhost:8000
 # API Docs: http://localhost:8000/docs
 ```
@@ -269,7 +269,7 @@ curl -X GET "http://localhost:8000/api/v1/digest/daily?max_items=20" \
 
 ### Frontend Testing
 
-1. Visit http://localhost:3000
+1. Visit http://localhost:3001
 2. Click "Get Started" → Register
 3. Login with credentials
 4. Navigate to Dashboard

@@ -29,11 +29,11 @@ npm run dev
 
 ## ✅ You're Done!
 
-Open http://localhost:3000 in your browser.
+Open http://localhost:3001 in your browser.
 
 ## 🔑 Test Account
 
-1. Go to http://localhost:3000
+1. Go to http://localhost:3001
 2. Click "Get Started"
 3. Register with:
    - Email: `test@example.com`
@@ -83,7 +83,7 @@ npm install
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost:3000 |
+| Frontend | http://localhost:3001 |
 | Backend API | http://localhost:8000 |
 | API Docs | http://localhost:8000/docs |
 | Health Check | http://localhost:8000/health |

@@ -35,11 +35,15 @@ class Settings(BaseSettings):
     DATABASE_POOL_SIZE: int = 5
     DATABASE_MAX_OVERFLOW: int = 10
 
-    # Email (for notifications)
-    EMAIL_FROM: Optional[str] = None
+    # Email (for notifications and daily digest)
+    EMAIL_FROM: str = "noreply@marketintel.com"
+    EMAIL_FROM_NAME: str = "Market Intelligence Platform"
     EMAIL_PASSWORD: Optional[str] = None
-    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_SERVER: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    SMTP_USE_TLS: bool = True
 
     # News APIs
     NEWSAPI_KEY: Optional[str] = None

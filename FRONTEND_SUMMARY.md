@@ -211,7 +211,7 @@ npm run dev
 ```
 
 ### 3. Access Application
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3001
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
@@ -359,7 +359,7 @@ npm start
    ```
 
 3. **Test the Application**
-   - Visit http://localhost:3000
+   - Visit http://localhost:3001
    - Create an account
    - Explore the dashboard
    - Check the digest feed
