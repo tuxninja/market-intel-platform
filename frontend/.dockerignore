@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Next.js
+.next
+out
+
+# Environment
+.env*.local
+.env
+
+# IDE
+.vscode
+.idea
+
+# Git
+.git
+.gitignore
+
+# Misc
+README.md
+*.md
