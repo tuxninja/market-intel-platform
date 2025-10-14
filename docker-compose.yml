@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: market-intel-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-marketintel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-marketintel_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-market_intelligence}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-marketintel}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - market-intel-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: market-intel-backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      # Application
+      APP_NAME: "Market Intelligence Platform"
+      DEBUG: ${DEBUG:-true}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-marketintel}:${POSTGRES_PASSWORD:-marketintel_dev}@postgres:5432/${POSTGRES_DB:-market_intelligence}
+
+      # Security
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+
+      # APIs (optional)
+      NEWSAPI_KEY: ${NEWSAPI_KEY:-}
+      ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY:-}
+
+      # Email (optional)
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+
+      # Stripe (optional)
+      STRIPE_API_KEY: ${STRIPE_API_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+
+    volumes:
+      - ./backend:/app
+      - backend_cache:/app/.cache
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - market-intel-network
+
+  # Redis (optional, for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: market-intel-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - market-intel-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_cache:
+    driver: local
+
+networks:
+  market-intel-network:
+    driver: bridge
