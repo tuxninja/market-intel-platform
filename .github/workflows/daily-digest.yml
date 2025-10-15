@@ -99,6 +99,13 @@ jobs:
             --port 587 \
             --cidr 0.0.0.0/0
 
+          # Add outbound PostgreSQL rule for database
+          aws ec2 authorize-security-group-egress \
+            --group-id $SG_ID \
+            --protocol tcp \
+            --port 5432 \
+            --cidr 0.0.0.0/0
+
           echo "✅ Security group created: $SG_ID"
         else
           echo "✅ Using existing security group: $SG_ID"
