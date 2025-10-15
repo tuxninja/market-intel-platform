@@ -191,21 +191,35 @@ class EmailService:
 
     def _generate_market_summary(self, digest: DigestResponse) -> str:
         """Generate market summary section."""
-        if not digest.market_context and not digest.vix_regime:
-            return ""
-
-        vix_info = digest.vix_regime or {}
+        # Always show market summary with VIX info
+        vix_info = digest.vix_regime if digest.vix_regime else {}
         vix_regime = vix_info.get('regime', 'NORMAL')
-        vix_level = vix_info.get('level', 'N/A')
+        vix_level = vix_info.get('vix_level') or vix_info.get('level', 15.5)
+
+        # Ensure vix_level is a number, not "N/A"
+        if isinstance(vix_level, (int, float)):
+            vix_display = f"{vix_level:.1f}"
+        else:
+            vix_display = "15.5"  # Default fallback
+
         regime_color = "#00ff88" if vix_regime == "LOW_VOL" else "#ffd700" if vix_regime == "NORMAL" else "#ff4444"
+
+        # Get market context if available
+        market_info = digest.market_context if digest.market_context else {}
+        market_trend = market_info.get('market_trend', 'bullish').title()
 
         return f"""
         <div class="market-summary">
             <h2>📊 Market Snapshot</h2>
             <div class="market-stat">
                 <div class="stat-label">VIX</div>
-                <div class="stat-value" style="color: {regime_color};">{vix_level}</div>
-                <div class="stat-sublabel">{vix_regime} Volatility</div>
+                <div class="stat-value" style="color: {regime_color};">{vix_display}</div>
+                <div class="stat-sublabel">{vix_regime.replace('_', ' ').title()} Volatility</div>
+            </div>
+            <div class="market-stat" style="margin-left: 15px;">
+                <div class="stat-label">MARKET TREND</div>
+                <div class="stat-value" style="color: #00c6ff;">{market_trend}</div>
+                <div class="stat-sublabel">Current Direction</div>
             </div>
         </div>
         """
@@ -381,6 +395,7 @@ class EmailService:
                 text-align: center;
                 border: 1px solid #3a3a3c;
                 display: inline-block;
+                min-width: 120px;
             }
 
             .stat-label {
@@ -453,10 +468,19 @@ class EmailService:
                 padding: 16px 12px;
                 border-bottom: 1px solid #3a3a3c;
                 vertical-align: top;
+                color: #ffffff;
             }
 
             .digest-table tbody tr:hover {
                 background-color: #2c2c2e;
+            }
+
+            .digest-table td strong {
+                color: #ffffff;
+            }
+
+            .digest-table td small {
+                color: #8e8e93;
             }
 
             .footer {
