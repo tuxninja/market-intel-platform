@@ -8,7 +8,7 @@
 
 - Daily email automation: **ENABLED**
 - Recipient: **jasonnetbiz@gmail.com**
-- Schedule: **6:30 AM Arizona Time (Mon-Fri)**
+- Schedule: **6:30 AM Arizona Time (Mon-Fri)** ⚠️ May arrive 10-20 min late due to GitHub Actions queue
 - Cost: **~$1/month**
 
 ---
