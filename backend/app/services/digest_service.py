@@ -184,8 +184,9 @@ class DigestService:
         return {
             "market_trend": "bullish",
             "major_indices": {
-                "SPY": {"change": "+0.5%", "level": 450.0},
-                "QQQ": {"change": "+0.8%", "level": 380.0},
+                "SPY": {"change": "+0.5%", "level": 453.25},
+                "DIA": {"change": "+0.3%", "level": 342.10},
+                "QQQ": {"change": "+0.8%", "level": 385.50},
             },
             "sector_rotation": "Technology leading",
         }

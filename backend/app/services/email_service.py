@@ -207,6 +207,22 @@ class EmailService:
         # Get market context if available
         market_info = digest.market_context if digest.market_context else {}
         market_trend = market_info.get('market_trend', 'bullish').title()
+        major_indices = market_info.get('major_indices', {})
+
+        # Generate index stats HTML
+        index_stats_html = ""
+        for symbol, data in major_indices.items():
+            level = data.get('level', 0)
+            change = data.get('change', '+0.0%')
+            change_color = "#00ff88" if change.startswith('+') else "#ff4444" if change.startswith('-') else "#8e8e93"
+
+            index_stats_html += f"""
+            <div class="market-stat" style="margin-left: 15px;">
+                <div class="stat-label">{symbol}</div>
+                <div class="stat-value">{level:.2f}</div>
+                <div class="stat-sublabel" style="color: {change_color};">{change}</div>
+            </div>
+            """
 
         return f"""
         <div class="market-summary">
@@ -216,6 +232,7 @@ class EmailService:
                 <div class="stat-value" style="color: {regime_color};">{vix_display}</div>
                 <div class="stat-sublabel">{vix_regime.replace('_', ' ').title()} Volatility</div>
             </div>
+            {index_stats_html}
             <div class="market-stat" style="margin-left: 15px;">
                 <div class="stat-label">MARKET TREND</div>
                 <div class="stat-value" style="color: #00c6ff;">{market_trend}</div>
