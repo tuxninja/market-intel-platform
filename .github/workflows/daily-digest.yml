@@ -1,11 +1,10 @@
 name: Daily Market Intelligence Digest
 
 on:
-  # Disabled by default - enable after AWS ECS setup
-  # schedule:
-  #   # Run at 6:30 AM Arizona Time (13:30 UTC) Monday-Friday
-  #   # 30 minutes before main trading analysis for morning news brief
-  #   - cron: '30 13 * * 1-5'
+  # Run at 6:30 AM Arizona Time (13:30 UTC) Monday-Friday
+  schedule:
+    # 30 minutes before main trading analysis for morning news brief
+    - cron: '30 13 * * 1-5'
   workflow_dispatch:
     inputs:
       max_items:
