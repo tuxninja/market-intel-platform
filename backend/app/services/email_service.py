@@ -155,6 +155,7 @@ class EmailService:
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="x-apple-disable-message-reformatting">
             <title>Daily Market Intelligence</title>
             {self._get_email_styles()}
         </head>
@@ -165,6 +166,8 @@ class EmailService:
                 {body_html}
                 {footer_html}
             </div>
+            <!-- Gmail no-clip marker -->
+            <div style="display:none; white-space:nowrap; font:15px courier; line-height:0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
         </body>
         </html>
         """
@@ -220,7 +223,7 @@ class EmailService:
                 <div class="market-stat">
                     <div class="stat-label">{symbol}</div>
                     <div class="stat-value">{level:.2f}</div>
-                    <div class="stat-sublabel" style="color: {change_color};">{change}</div>
+                    <div class="stat-sublabel" style="color: {change_color} !important;">{change}</div>
                 </div>"""
 
         return f"""
@@ -441,7 +444,7 @@ class EmailService:
 
             .stat-sublabel {
                 font-size: 10px;
-                color: #8e8e93 !important;
+                color: #8e8e93;
                 margin-top: 5px;
             }
 
@@ -495,6 +498,8 @@ class EmailService:
                 border-bottom: 1px solid #3a3a3c;
                 vertical-align: top;
                 color: #ffffff;
+                white-space: normal;
+                word-wrap: break-word;
             }
 
             .digest-table tbody tr:hover {
