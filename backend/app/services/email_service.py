@@ -217,26 +217,27 @@ class EmailService:
             change_color = "#00ff88" if change.startswith('+') else "#ff4444" if change.startswith('-') else "#8e8e93"
 
             index_stats_html += f"""
-            <div class="market-stat" style="margin-left: 15px;">
-                <div class="stat-label">{symbol}</div>
-                <div class="stat-value">{level:.2f}</div>
-                <div class="stat-sublabel" style="color: {change_color};">{change}</div>
-            </div>
-            """
+                <div class="market-stat">
+                    <div class="stat-label">{symbol}</div>
+                    <div class="stat-value">{level:.2f}</div>
+                    <div class="stat-sublabel" style="color: {change_color};">{change}</div>
+                </div>"""
 
         return f"""
         <div class="market-summary">
             <h2>📊 Market Snapshot</h2>
-            <div class="market-stat">
-                <div class="stat-label">VIX</div>
-                <div class="stat-value" style="color: {regime_color};">{vix_display}</div>
-                <div class="stat-sublabel">{vix_regime.replace('_', ' ').title()} Volatility</div>
-            </div>
-            {index_stats_html}
-            <div class="market-stat" style="margin-left: 15px;">
-                <div class="stat-label">MARKET TREND</div>
-                <div class="stat-value" style="color: #00c6ff;">{market_trend}</div>
-                <div class="stat-sublabel">Current Direction</div>
+            <div class="market-stats-container">
+                <div class="market-stat">
+                    <div class="stat-label">VIX</div>
+                    <div class="stat-value" style="color: {regime_color};">{vix_display}</div>
+                    <div class="stat-sublabel">{vix_regime.replace('_', ' ').title()} Volatility</div>
+                </div>
+                {index_stats_html}
+                <div class="market-stat">
+                    <div class="stat-label">MARKET TREND</div>
+                    <div class="stat-value" style="color: #00c6ff;">{market_trend}</div>
+                    <div class="stat-sublabel">Current Direction</div>
+                </div>
             </div>
         </div>
         """
@@ -405,20 +406,27 @@ class EmailService:
                 color: #00ff88;
             }
 
+            .market-stats-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 15px;
+                align-items: center;
+            }
+
             .market-stat {
                 background: #1c1c1e;
                 padding: 18px;
                 border-radius: 12px;
                 text-align: center;
                 border: 1px solid #3a3a3c;
-                display: inline-block;
                 min-width: 120px;
+                flex: 0 0 auto;
             }
 
             .stat-label {
                 display: block;
                 font-size: 11px;
-                color: #8e8e93;
+                color: #8e8e93 !important;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 margin-bottom: 8px;
@@ -428,11 +436,12 @@ class EmailService:
                 display: block;
                 font-size: 22px;
                 font-weight: 700;
+                color: #ffffff !important;
             }
 
             .stat-sublabel {
                 font-size: 10px;
-                color: #8e8e93;
+                color: #8e8e93 !important;
                 margin-top: 5px;
             }
 
