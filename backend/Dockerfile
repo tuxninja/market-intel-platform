@@ -21,5 +21,5 @@ RUN mkdir -p /app/.cache
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start server
-CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Start server (skip migrations if no DB available)
+CMD uvicorn app.main:app --host 0.0.0.0 --port 8000

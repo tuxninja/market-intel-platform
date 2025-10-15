@@ -25,7 +25,7 @@ class Signal(Base):
         priority: Signal priority (high, medium, low)
         category: Signal category (trade_alert, watch_list, market_context)
         source: Data source information
-        metadata: Additional signal metadata (JSON)
+        extra_data: Additional signal metadata (JSON)
         created_at: Signal generation timestamp
         expires_at: Signal expiration timestamp
     """
@@ -43,7 +43,7 @@ class Signal(Base):
     priority = Column(String, default="medium", nullable=False)
     category = Column(String, default="market_context", nullable=False)
     source = Column(String, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=True)
 

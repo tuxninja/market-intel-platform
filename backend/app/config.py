@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    # CORS (comma-separated string)
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
 
     # Database
     DATABASE_URL: PostgresDsn
@@ -65,12 +65,9 @@ class Settings(BaseSettings):
     REDIS_URL: Optional[str] = None
     CACHE_TTL_SECONDS: int = 3600
 
-    @validator("CORS_ORIGINS", pre=True)
-    def parse_cors_origins(cls, v):
-        """Parse CORS origins from comma-separated string."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+    def get_cors_origins_list(self) -> list[str]:
+        """Get CORS origins as a list."""
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
 
     class Config:
         env_file = ".env"
