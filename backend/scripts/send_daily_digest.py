@@ -46,9 +46,12 @@ async def send_digest(
         hours_lookback: Hours to look back for news
     """
     try:
-        # Initialize database
-        await init_db()
-        logger.info("Database initialized")
+        # Initialize database (optional - digest works without it)
+        try:
+            await init_db()
+            logger.info("Database initialized")
+        except Exception as db_error:
+            logger.warning(f"Database connection failed (continuing without it): {db_error}")
 
         # Generate digest
         logger.info(f"Generating digest: max_items={max_items}, lookback={hours_lookback}h")
