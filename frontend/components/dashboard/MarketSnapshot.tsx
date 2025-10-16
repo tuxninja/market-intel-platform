@@ -9,7 +9,7 @@ import React from 'react';
 import Card from '@/components/ui/Card';
 
 interface MarketData {
-  vix_level: number;
+  current_vix: number;
   regime: string;
   description: string;
 }
@@ -63,7 +63,7 @@ const MarketSnapshot: React.FC<MarketSnapshotProps> = ({
     return 'text-neutral';
   };
 
-  const vixLevel = vixRegime?.vix_level || 0;
+  const vixLevel = vixRegime?.current_vix || 0;
   const vixRegimeText = vixRegime?.regime || 'UNKNOWN';
   const marketTrend = marketContext?.market_trend || 'neutral';
   const indices = marketContext?.major_indices || {};
