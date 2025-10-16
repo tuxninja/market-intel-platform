@@ -10,9 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.signal import Signal
 from app.schemas.digest import DigestItemResponse, DigestResponse
-
-# Import core modules (these will need to be adapted for async if needed)
-# For now, we'll create a simplified version that works with the structure
+from app.services.signal_generator import signal_generator
+from app.services.market_data_service import market_data_service
 
 logger = logging.getLogger(__name__)
 
@@ -61,48 +60,14 @@ class DigestService:
         # Calculate cutoff time
         cutoff_time = datetime.utcnow() - timedelta(hours=hours_lookback)
 
-        # Try to fetch signals from database, or generate demo signals
-        items = []
-        if self.db is not None:
-            try:
-                # Build query
-                query = select(Signal).where(Signal.created_at >= cutoff_time)
-
-                if categories:
-                    query = query.where(Signal.category.in_(categories))
-
-                query = query.order_by(Signal.confidence_score.desc(), Signal.created_at.desc())
-                query = query.limit(max_items)
-
-                # Execute query
-                result = await self.db.execute(query)
-                signals = result.scalars().all()
-
-                # Convert to response format
-                items = [
-                    DigestItemResponse(
-                        id=signal.id,
-                        symbol=signal.symbol,
-                        title=signal.title,
-                        summary=signal.summary,
-                        explanation=signal.explanation,
-                        how_to_trade=signal.how_to_trade,
-                        sentiment_score=signal.sentiment_score,
-                        confidence_score=signal.confidence_score,
-                        priority=signal.priority,
-                        category=signal.category,
-                        source=signal.source,
-                        extra_data=signal.extra_data,
-                        created_at=signal.created_at,
-                    )
-                    for signal in signals
-                ]
-                logger.info(f"Fetched {len(items)} signals from database")
-            except Exception as db_error:
-                logger.warning(f"Database query failed, generating demo signals: {db_error}")
-                items = self._generate_demo_signals(max_items)
-        else:
-            logger.info("No database connection, generating demo signals")
+        # Generate real trading signals using signal generator
+        try:
+            logger.info("Generating real trading signals from market data")
+            items = await signal_generator.generate_signals(max_signals=max_items)
+            logger.info(f"Generated {len(items)} real trading signals")
+        except Exception as gen_error:
+            logger.error(f"Error generating real signals: {gen_error}")
+            logger.warning("Falling back to demo signals")
             items = self._generate_demo_signals(max_items)
 
         # Generate market context (placeholder for now)
@@ -175,35 +140,63 @@ class DigestService:
 
     async def _get_market_context(self) -> Dict[str, Any]:
         """
-        Get overall market context information.
+        Get overall market context information using real market data.
 
         Returns:
             Market context dictionary
         """
-        # Placeholder - would fetch real market data
-        return {
-            "market_trend": "bullish",
-            "major_indices": {
-                "SPY": {"change": "+0.5%", "level": 453.25},
-                "DIA": {"change": "+0.3%", "level": 342.10},
-                "QQQ": {"change": "+0.8%", "level": 385.50},
-            },
-            "sector_rotation": "Technology leading",
-        }
+        try:
+            # Get real market indices data
+            indices = await market_data_service.get_market_indices()
+
+            # Determine overall market trend based on SPY
+            spy_data = indices.get("SPY", {})
+            spy_change = spy_data.get("raw_change", 0)
+
+            if spy_change > 0.5:
+                market_trend = "bullish"
+            elif spy_change < -0.5:
+                market_trend = "bearish"
+            else:
+                market_trend = "neutral"
+
+            return {
+                "market_trend": market_trend,
+                "major_indices": indices,
+                "sector_rotation": "Data-driven analysis",  # Could enhance this later
+            }
+        except Exception as e:
+            logger.error(f"Error fetching market context: {e}")
+            # Fallback to placeholder data
+            return {
+                "market_trend": "neutral",
+                "major_indices": {
+                    "SPY": {"change": "N/A", "level": 0},
+                    "DIA": {"change": "N/A", "level": 0},
+                    "QQQ": {"change": "N/A", "level": 0},
+                },
+                "sector_rotation": "Unable to fetch data",
+            }
 
     async def _get_vix_regime(self) -> Dict[str, Any]:
         """
-        Get VIX market regime information.
+        Get VIX market regime information using real VIX data.
 
         Returns:
             VIX regime dictionary
         """
-        # Placeholder - would fetch real VIX data
-        return {
-            "vix_level": 15.5,
-            "regime": "LOW_VOL",
-            "description": "Low volatility - favorable for momentum strategies",
-        }
+        try:
+            # Get real VIX regime data
+            vix_regime = await market_data_service.get_vix_regime()
+            return vix_regime
+        except Exception as e:
+            logger.error(f"Error fetching VIX regime: {e}")
+            # Fallback to placeholder data
+            return {
+                "vix_level": 15.5,
+                "regime": "NORMAL",
+                "description": "Unable to fetch VIX data",
+            }
 
     def _generate_demo_signals(self, max_items: int) -> List[DigestItemResponse]:
         """

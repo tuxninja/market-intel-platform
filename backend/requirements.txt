@@ -27,6 +27,9 @@ vaderSentiment==3.3.2
 pandas==2.2.0
 numpy==1.26.4
 aiohttp==3.9.3
+alpha-vantage==2.3.1
+newsapi-python==0.2.7
+ta==0.11.0  # Technical Analysis library
 
 # Email
 aiosmtplib==3.0.1
