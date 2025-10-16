@@ -11,6 +11,7 @@ import { digestApi } from '@/lib/api';
 import { DigestResponse, DigestItem, FilterOptions } from '@/lib/types';
 import DigestCard from '@/components/digest/DigestCard';
 import DigestFilters from '@/components/digest/DigestFilters';
+import MarketSnapshot from '@/components/dashboard/MarketSnapshot';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -132,25 +133,13 @@ export default function DigestPage() {
           </Button>
         </div>
 
-        {/* VIX Regime (if available) */}
-        {digest?.vix_regime && (
-          <div className="bg-card rounded-xl border border-primary/20 p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1">
-                  Market Regime: {digest.vix_regime.regime}
-                </h3>
-                <p className="text-gray-300">{digest.vix_regime.description}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-gray-400">Current VIX</p>
-                <p className="text-3xl font-bold text-primary">
-                  {digest.vix_regime.current_vix}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Market Snapshot Widget */}
+        <div className="mb-8">
+          <MarketSnapshot
+            vixRegime={digest?.vix_regime}
+            marketContext={digest?.market_context}
+          />
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

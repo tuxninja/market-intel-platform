@@ -127,6 +127,48 @@ const DigestCard: React.FC<DigestCardProps> = ({ item }) => {
                 </div>
               )}
 
+              {/* News Articles Section */}
+              {item.news_articles && item.news_articles.length > 0 && (
+                <div className="bg-card-dark p-4 rounded-lg border-l-4 border-primary/30">
+                  <h4 className="text-primary font-bold mb-3 flex items-center gap-2">
+                    📰 RELATED NEWS
+                  </h4>
+                  <div className="space-y-3">
+                    {item.news_articles.slice(0, 3).map((article, idx) => {
+                      const sentimentEmoji = article.sentiment_score > 0.2
+                        ? '📈'
+                        : article.sentiment_score < -0.2
+                        ? '📉'
+                        : '📊';
+
+                      return (
+                        <div
+                          key={idx}
+                          className="pb-3 border-b border-neutral/10 last:border-b-0 last:pb-0"
+                        >
+                          <div className="flex items-center gap-2 mb-1 text-xs">
+                            <span className="text-neutral font-mono uppercase">
+                              {article.source}
+                            </span>
+                            <span>{sentimentEmoji}</span>
+                          </div>
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-primary transition-colors text-sm leading-snug block"
+                          >
+                            {article.title.length > 100
+                              ? `${article.title.substring(0, 100)}...`
+                              : article.title}
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {item.how_to_trade && (
                 <div>
                   <h4 className="text-primary font-bold mb-2">🎯 HOW TO TRADE</h4>
