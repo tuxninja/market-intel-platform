@@ -142,6 +142,18 @@ class SignalGenerator:
                 symbol, combined_score, price_data, mas, rsi
             )
 
+            # Format news articles for display
+            formatted_news = []
+            for article in news_articles[:5]:  # Top 5 news articles
+                formatted_news.append({
+                    "title": article.title,
+                    "summary": article.summary,
+                    "url": article.url,
+                    "sentiment_score": article.sentiment_score,
+                    "source": article.source,
+                    "published": article.published.isoformat() if isinstance(article.published, datetime) else str(article.published)
+                })
+
             return DigestItemResponse(
                 id=hash(symbol) % 100000,  # Temporary ID
                 symbol=symbol,
@@ -154,7 +166,8 @@ class SignalGenerator:
                 priority=priority,
                 category=category,
                 source="technical_analysis+news",
-                extra_data={
+                news_articles=formatted_news if formatted_news else None,
+                metadata={
                     "sector": price_data.get("sector"),
                     "current_price": price_data.get("price"),
                     "rsi": rsi,

@@ -23,6 +23,7 @@ class DigestItemResponse(BaseModel):
         priority: Signal priority (high, medium, low)
         category: Signal category (trade_alert, watch_list, market_context)
         source: Data source
+        news_articles: Related news articles that influenced this signal
         metadata: Additional metadata
         created_at: Creation timestamp
     """
@@ -38,6 +39,7 @@ class DigestItemResponse(BaseModel):
     priority: str = "medium"
     category: str = "market_context"
     source: Optional[str] = None
+    news_articles: Optional[List[Dict[str, Any]]] = None
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime
 

@@ -298,11 +298,40 @@ class EmailService:
             sentiment_icon = "↑" if (item.sentiment_score or 0) > 0 else "↓"
             sentiment_display = f"{sentiment_icon} {abs(item.sentiment_score or 0):.2f}"
 
+            # Build explanation with news articles
+            explanation_html = f'<div style="font-size: 12px;">{item.explanation or "N/A"}'
+
+            # Add news articles if available
+            if item.news_articles:
+                explanation_html += '<div style="margin-top: 12px; padding: 10px; background-color: rgba(46, 46, 46, 0.5); border-radius: 6px; border-left: 3px solid #00c6ff;">'
+                explanation_html += '<div style="font-weight: 600; color: #00c6ff; margin-bottom: 8px; font-size: 11px; text-transform: uppercase;">📰 Related News</div>'
+
+                for article in item.news_articles[:3]:  # Show top 3 news articles
+                    article_sentiment = article.get('sentiment_score', 0)
+                    sentiment_emoji = "📈" if article_sentiment > 0.2 else "📉" if article_sentiment < -0.2 else "📊"
+                    source = article.get('source', 'Unknown').upper()
+
+                    explanation_html += f'''
+                    <div style="margin-bottom: 8px; padding: 6px 0; border-bottom: 1px solid rgba(142, 142, 147, 0.3);">
+                        <div style="font-size: 11px; margin-bottom: 3px;">
+                            <span style="color: #8e8e93;">{source}</span>
+                            <span style="margin-left: 8px;">{sentiment_emoji}</span>
+                        </div>
+                        <a href="{article.get('url', '#')}" style="color: #fff; text-decoration: none; font-size: 11px; line-height: 1.4;">
+                            {article.get('title', 'No title')[:100]}{"..." if len(article.get('title', '')) > 100 else ""}
+                        </a>
+                    </div>
+                    '''
+
+                explanation_html += '</div>'
+
+            explanation_html += '</div>'
+
             row = f"""
             <tr>
                 <td style="text-align: center;">{idx}</td>
                 <td><strong>{item.title}</strong><br/><small>{item.summary}</small></td>
-                <td style="font-size: 12px;">{item.explanation or 'N/A'}</td>
+                <td>{explanation_html}</td>
                 <td style="text-align: center; font-weight: bold; color: {sentiment_color};">{sentiment_display}</td>
             </tr>
             """
