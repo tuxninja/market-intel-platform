@@ -5,16 +5,13 @@ Authentication service for user management and JWT token handling.
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.user import User
 from app.schemas.user import UserCreate, TokenData
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthService:
@@ -38,8 +35,9 @@ class AuthService:
         # Bcrypt has a maximum password length of 72 bytes
         # Truncate to 72 bytes to avoid ValueError
         password_bytes = password.encode('utf-8')[:72]
-        password_truncated = password_bytes.decode('utf-8', errors='ignore')
-        return pwd_context.hash(password_truncated)
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password_bytes, salt)
+        return hashed.decode('utf-8')
 
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -55,8 +53,8 @@ class AuthService:
         """
         # Truncate password to 72 bytes to match hash_password behavior
         password_bytes = plain_password.encode('utf-8')[:72]
-        password_truncated = password_bytes.decode('utf-8', errors='ignore')
-        return pwd_context.verify(password_truncated, hashed_password)
+        hashed_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
 
     @staticmethod
     def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
