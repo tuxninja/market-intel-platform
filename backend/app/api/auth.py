@@ -67,7 +67,7 @@ async def login(login_data: UserLogin, db: AsyncSession = Depends(get_db)):
         )
 
     # Create tokens
-    token_data = {"sub": user.id, "email": user.email}
+    token_data = {"sub": str(user.id), "email": user.email}
     access_token = AuthService.create_access_token(token_data)
     refresh_token = AuthService.create_refresh_token(token_data)
 
@@ -107,7 +107,7 @@ async def refresh_token(token: str, db: AsyncSession = Depends(get_db)):
         )
 
     # Create new tokens
-    new_token_data = {"sub": user.id, "email": user.email}
+    new_token_data = {"sub": str(user.id), "email": user.email}
     access_token = AuthService.create_access_token(new_token_data)
     refresh_token = AuthService.create_refresh_token(new_token_data)
 

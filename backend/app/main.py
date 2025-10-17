@@ -11,7 +11,7 @@ import logging
 
 from app.config import settings
 from app.database import init_db, close_db
-from app.api import auth, digest
+from app.api import auth, digest, debug
 
 # Configure logging
 logging.basicConfig(
@@ -80,6 +80,7 @@ async def health_check():
 # Include routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_PREFIX}/auth", tags=["Authentication"])
 app.include_router(digest.router, prefix=f"{settings.API_V1_PREFIX}/digest", tags=["Digest"])
+app.include_router(debug.router, prefix=f"{settings.API_V1_PREFIX}/debug", tags=["Debug"])
 
 
 if __name__ == "__main__":

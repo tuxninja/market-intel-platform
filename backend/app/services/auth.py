@@ -2,7 +2,7 @@
 Authentication service for user management and JWT token handling.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 import bcrypt
@@ -44,6 +44,8 @@ class AuthService:
         """
         Verify a plain text password against a hashed password.
 
+        Supports both new bcrypt hashes and legacy passlib hashes for backward compatibility.
+
         Args:
             plain_password: Plain text password
             hashed_password: Bcrypt hashed password
@@ -54,7 +56,19 @@ class AuthService:
         # Truncate password to 72 bytes to match hash_password behavior
         password_bytes = plain_password.encode('utf-8')[:72]
         hashed_bytes = hashed_password.encode('utf-8')
-        return bcrypt.checkpw(password_bytes, hashed_bytes)
+
+        try:
+            # Try new bcrypt verification first
+            return bcrypt.checkpw(password_bytes, hashed_bytes)
+        except (ValueError, AttributeError):
+            # Fall back to passlib for legacy hashes
+            try:
+                from passlib.context import CryptContext
+                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                password_truncated = password_bytes.decode('utf-8', errors='ignore')
+                return pwd_context.verify(password_truncated, hashed_password)
+            except:
+                return False
 
     @staticmethod
     def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -70,11 +84,11 @@ class AuthService:
         """
         to_encode = data.copy()
         if expires_delta:
-            expire = datetime.utcnow() + expires_delta
+            expire = datetime.now(timezone.utc) + expires_delta
         else:
-            expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+            expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-        to_encode.update({"exp": expire, "type": "access"})
+        to_encode.update({"exp": int(expire.timestamp()), "type": "access"})
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         return encoded_jwt
 
@@ -90,8 +104,8 @@ class AuthService:
             Encoded JWT refresh token string
         """
         to_encode = data.copy()
-        expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-        to_encode.update({"exp": expire, "type": "refresh"})
+        expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        to_encode.update({"exp": int(expire.timestamp()), "type": "refresh"})
         encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
         return encoded_jwt
 
@@ -108,12 +122,14 @@ class AuthService:
         """
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-            user_id: int = payload.get("sub")
+            user_id_str = payload.get("sub")
             email: str = payload.get("email")
-            if user_id is None:
+            if user_id_str is None:
                 return None
+            # Convert string user_id to int
+            user_id = int(user_id_str)
             return TokenData(user_id=user_id, email=email)
-        except JWTError:
+        except (JWTError, ValueError, TypeError):
             return None
 
     @staticmethod
