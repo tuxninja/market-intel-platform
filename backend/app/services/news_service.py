@@ -2,7 +2,7 @@
 News Service Module
 
 Fetches financial news and performs sentiment analysis.
-Uses RSS feeds (free, no API key required for MVP).
+Uses NewsAPI as primary source, RSS feeds as fallback.
 """
 
 import logging
@@ -12,6 +12,7 @@ import feedparser
 import aiohttp
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from textblob import TextBlob
+from app.services.newsapi_service import newsapi_service, NewsAPIArticle
 
 logger = logging.getLogger(__name__)
 
@@ -352,7 +353,30 @@ class NewsService:
             List of articles mentioning the symbol
         """
         try:
-            # Fetch all news
+            # Try NewsAPI first
+            newsapi_articles = await newsapi_service.get_symbol_news(symbol, hours_lookback, max_articles)
+
+            if newsapi_articles:
+                logger.info(f"Got {len(newsapi_articles)} articles for {symbol} from NewsAPI")
+                # Convert NewsAPIArticle to NewsArticle and enrich with sentiment
+                articles = []
+                for api_article in newsapi_articles:
+                    article = NewsArticle(
+                        title=api_article.title,
+                        summary=api_article.description or api_article.content,
+                        url=api_article.url,
+                        published=api_article.published,
+                        source=api_article.source
+                    )
+                    # Add sentiment
+                    text = f"{article.title}. {article.summary}"
+                    article.sentiment_score = self.analyze_sentiment(text)
+                    articles.append(article)
+
+                return articles[:max_articles]
+
+            # Fallback to RSS feeds
+            logger.debug(f"NewsAPI failed for {symbol}, using RSS fallback")
             articles = await self.fetch_all_news(hours_lookback, max_articles * 3)
 
             # Enrich with sentiment

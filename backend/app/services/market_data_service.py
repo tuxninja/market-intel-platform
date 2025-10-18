@@ -2,7 +2,7 @@
 Market Data Service Module
 
 Fetches real-time stock prices, technical indicators, and market data.
-Uses yfinance for free real-time data.
+Uses Alpha Vantage API as primary source, yfinance as fallback.
 """
 
 import logging
@@ -14,6 +14,7 @@ import numpy as np
 from ta.trend import MACD, EMAIndicator
 from ta.momentum import RSIIndicator, StochasticOscillator
 from ta.volume import OnBalanceVolumeIndicator, VolumeWeightedAveragePrice
+from app.services.alpha_vantage_service import alpha_vantage_service
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +23,12 @@ class MarketDataService:
     """
     Service for fetching real-time market data and calculating technical indicators.
 
-    Uses yfinance (free, no API key required).
+    Uses Alpha Vantage API (with rate limiting) and yfinance as fallback.
     """
 
     def __init__(self):
         """Initialize market data service."""
-        pass
+        self.use_alpha_vantage = True  # Try Alpha Vantage first
 
     async def get_stock_price(self, symbol: str) -> Optional[Dict[str, Any]]:
         """
@@ -52,6 +53,19 @@ class MarketDataService:
                 "previous_close": 180.20
             }
         """
+        # Try Alpha Vantage first
+        if self.use_alpha_vantage:
+            try:
+                quote = await alpha_vantage_service.get_quote(symbol)
+                if quote:
+                    logger.info(f"Got price for {symbol} from Alpha Vantage")
+                    return quote
+                else:
+                    logger.debug(f"Alpha Vantage failed for {symbol}, trying yfinance")
+            except Exception as e:
+                logger.debug(f"Alpha Vantage error for {symbol}: {e}")
+
+        # Fallback to yfinance (but it's rate limited)
         try:
             ticker = yf.Ticker(symbol)
             info = ticker.info
@@ -61,12 +75,13 @@ class MarketDataService:
             previous_close = info.get('previousClose')
 
             if not current_price or not previous_close:
-                logger.warning(f"Could not get price for {symbol}")
+                logger.warning(f"Could not get price for {symbol} from yfinance")
                 return None
 
             change = current_price - previous_close
             change_percent = (change / previous_close) * 100
 
+            logger.info(f"Got price for {symbol} from yfinance fallback")
             return {
                 "symbol": symbol,
                 "price": round(current_price, 2),
@@ -83,7 +98,7 @@ class MarketDataService:
             }
 
         except Exception as e:
-            logger.error(f"Error fetching price for {symbol}: {e}")
+            logger.error(f"Error fetching price for {symbol} (both APIs failed): {e}")
             return None
 
     async def get_historical_data(
