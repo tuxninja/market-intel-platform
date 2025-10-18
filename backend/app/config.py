@@ -1,5 +1,5 @@
 """
-Configuration management for Market Intelligence Platform.
+Configuration management for TradeTheHype.
 
 Uses pydantic-settings for environment variable management with validation.
 """
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # Application
-    APP_NAME: str = "Market Intelligence Platform"
+    APP_NAME: str = "TradeTheHype"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "development"
@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     DATABASE_MAX_OVERFLOW: int = 10
 
     # Email (for notifications and daily digest)
-    EMAIL_FROM: str = "noreply@marketintel.com"
-    EMAIL_FROM_NAME: str = "Market Intelligence Platform"
+    EMAIL_FROM: str = "noreply@tradethehype.com"
+    EMAIL_FROM_NAME: str = "TradeTheHype"
     EMAIL_PASSWORD: Optional[str] = None
     SMTP_SERVER: str = "smtp.gmail.com"
     SMTP_PORT: int = 587

@@ -2,7 +2,7 @@
 Email Service Module
 
 Sends daily digest emails using SMTP.
-Adapted from trade-ideas project for market-intel-platform.
+Adapted from trade-ideas project for TradeTheHype.
 """
 
 import logging
@@ -58,7 +58,7 @@ class EmailService:
 
             # Create MIME message
             message = MIMEMultipart("alternative")
-            message["Subject"] = f"💎 Daily Market Intelligence - {datetime.now().strftime('%B %d, %Y')}"
+            message["Subject"] = f"💎 TradeTheHype Daily Digest - {datetime.now().strftime('%B %d, %Y')}"
             message["From"] = formataddr((self.from_name, self.from_email))
             message["To"] = recipient_email
             message["Date"] = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z")
@@ -156,7 +156,7 @@ class EmailService:
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta name="x-apple-disable-message-reformatting">
-            <title>Daily Market Intelligence</title>
+            <title>TradeTheHype Daily Digest</title>
             {self._get_email_styles()}
         </head>
         <body>
@@ -183,7 +183,7 @@ class EmailService:
 
         return f"""
         <div class="header">
-            <h1>💎 Daily Market Intelligence</h1>
+            <h1>💎 TradeTheHype</h1>
             <div class="header-info">
                 <div class="greeting">{greeting}</div>
                 <div class="date">{current_date}</div>
@@ -361,7 +361,7 @@ class EmailService:
 
     def _generate_footer(self) -> str:
         """Generate email footer."""
-        return f"""<div class="footer"><div class="disclaimer"><p><strong>⚠️ Disclaimer:</strong> For informational purposes only. Not investment advice. Conduct your own research.</p></div><div class="signature"><p>📈 Market Intelligence Platform<br><small>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</small></p></div></div>"""
+        return f"""<div class="footer"><div class="disclaimer"><p><strong>⚠️ Disclaimer:</strong> For informational purposes only. Not investment advice. Conduct your own research.</p></div><div class="signature"><p>📈 TradeTheHype.com<br><small>{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</small></p></div></div>"""
 
     def _get_email_styles(self) -> str:
         """Get email CSS styles (Robinhood dark theme) - minified."""

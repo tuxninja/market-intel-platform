@@ -1,10 +1,10 @@
-# Market Intelligence Platform
+# TradeTheHype
 
 A modern, full-stack SaaS platform delivering AI-enhanced market intelligence and trading insights. Built with FastAPI, React, and PostgreSQL.
 
 ## Overview
 
-The Market Intelligence Platform provides curated, actionable market intelligence through:
+TradeTheHype provides curated, actionable market intelligence through:
 
 - **Daily Market Digest**: AI-curated trading signals with "WHY THIS MATTERS" and "HOW TO TRADE" guidance
 - **Real-time Analysis**: ML-enhanced sentiment analysis and pattern recognition
@@ -47,7 +47,7 @@ The Market Intelligence Platform provides curated, actionable market intelligenc
 ## Project Structure
 
 ```
-market-intel-platform/
+tradethehype/
 ├── backend/
 │   ├── alembic/                 # Database migrations
 │   │   ├── versions/
@@ -100,7 +100,7 @@ market-intel-platform/
 1. **Clone the repository**
 ```bash
 git clone <repository-url>
-cd market-intel-platform
+cd tradethehype
 ```
 
 2. **Configure environment variables**
@@ -359,7 +359,7 @@ See `.env.example` for all available configuration options. Key variables:
 
 1. **Build production image**
 ```bash
-docker build -t market-intel-platform:latest ./backend
+docker build -t tradethehype:latest ./backend
 ```
 
 2. **Run with production compose**
@@ -439,8 +439,8 @@ Proprietary - All rights reserved
 ## Support
 
 For support, please contact:
-- Email: support@market-intel-platform.com
-- Documentation: https://docs.market-intel-platform.com
+- Email: support@tradethehype.com
+- Documentation: https://docs.tradethehype.com
 - Issues: GitHub Issues
 
 ## Acknowledgments

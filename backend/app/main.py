@@ -29,14 +29,14 @@ async def lifespan(app: FastAPI):
     Handles startup and shutdown events for the FastAPI application.
     """
     # Startup
-    logger.info("Starting Market Intelligence Platform API")
+    logger.info("Starting TradeTheHype API")
     await init_db()
     logger.info("Database initialized")
 
     yield
 
     # Shutdown
-    logger.info("Shutting down Market Intelligence Platform API")
+    logger.info("Shutting down TradeTheHype API")
     await close_db()
     logger.info("Database connections closed")
 
