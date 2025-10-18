@@ -65,6 +65,11 @@ class DigestService:
             logger.info("Generating real trading signals from market data")
             items = await signal_generator.generate_signals(max_signals=max_items)
             logger.info(f"Generated {len(items)} real trading signals")
+
+            # If no signals generated, use demo signals
+            if not items:
+                logger.warning("No real signals generated, falling back to demo signals")
+                items = self._generate_demo_signals(max_items)
         except Exception as gen_error:
             logger.error(f"Error generating real signals: {gen_error}")
             logger.warning("Falling back to demo signals")
