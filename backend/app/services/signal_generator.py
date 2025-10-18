@@ -69,8 +69,10 @@ class SignalGenerator:
                 signal = await self._analyze_symbol(symbol)
                 if signal:
                     signals.append(signal)
+                else:
+                    logger.debug(f"No signal generated for {symbol}")
             except Exception as e:
-                logger.error(f"Error analyzing {symbol}: {e}")
+                logger.error(f"Error analyzing {symbol}: {e}", exc_info=True)
                 continue
 
         # Sort by confidence score (highest first)
@@ -94,10 +96,12 @@ class SignalGenerator:
         """
         try:
             # Get comprehensive technical analysis
+            logger.debug(f"Fetching analysis for {symbol}...")
             analysis = await market_data_service.get_comprehensive_analysis(symbol)
             if not analysis:
-                logger.warning(f"No analysis data for {symbol}")
+                logger.warning(f"No analysis data returned for {symbol} - yfinance may have failed")
                 return None
+            logger.debug(f"Successfully fetched analysis for {symbol}")
 
             price_data = analysis.get("price", {})
             rsi = analysis.get("rsi")
@@ -118,8 +122,12 @@ class SignalGenerator:
             combined_score = (tech_score * 0.6) + (news_score * 0.4)  # 60% technical, 40% news
 
             # Determine if signal is strong enough
-            if abs(combined_score) < 0.3:  # Filter weak signals
+            # Lower threshold to 0.15 to generate more signals even in neutral markets
+            if abs(combined_score) < 0.15:  # Filter only very weak signals
+                logger.info(f"Skipping {symbol}: combined_score={combined_score:.2f} below threshold")
                 return None
+
+            logger.info(f"Signal generated for {symbol}: score={combined_score:.2f}, tech={tech_score:.2f}, news={news_score:.2f}")
 
             # Determine signal category and priority
             category = self._determine_category(combined_score, volume)
