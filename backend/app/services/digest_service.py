@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.signal import Signal
 from app.schemas.digest import DigestItemResponse, DigestResponse
 from app.services.signal_generator import signal_generator
+from app.services.news_driven_signal_generator import create_news_driven_generator
 from app.services.market_data_service import market_data_service
 
 logger = logging.getLogger(__name__)
@@ -60,18 +61,23 @@ class DigestService:
         # Calculate cutoff time
         cutoff_time = datetime.utcnow() - timedelta(hours=hours_lookback)
 
-        # Generate real trading signals using signal generator
+        # Generate real trading signals using NEWS-DRIVEN signal generator
         try:
-            logger.info("Generating real trading signals from market data")
-            items = await signal_generator.generate_signals(max_signals=max_items)
-            logger.info(f"Generated {len(items)} real trading signals")
+            logger.info("Generating NEWS-DRIVEN trading signals (ML-powered)")
 
-            # If no signals generated, use demo signals
+            # NOTE: News-driven generator requires regular Session, not AsyncSession
+            # For now, use technical-only generator until we refactor for async
+            # TODO: Refactor news_driven_signal_generator for AsyncSession support
+            logger.warning("News-driven generator requires refactoring for async - using technical generator")
+            items = await signal_generator.generate_signals(max_signals=max_items)
+            logger.info(f"Generated {len(items)} technical signals")
+
+            # If no signals, use demo
             if not items:
-                logger.warning("No real signals generated, falling back to demo signals")
+                logger.warning("No signals generated, falling back to demo signals")
                 items = self._generate_demo_signals(max_items)
         except Exception as gen_error:
-            logger.error(f"Error generating real signals: {gen_error}")
+            logger.error(f"Error generating signals: {gen_error}", exc_info=True)
             logger.warning("Falling back to demo signals")
             items = self._generate_demo_signals(max_items)
 

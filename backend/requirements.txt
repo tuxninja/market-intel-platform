@@ -32,6 +32,12 @@ alpha-vantage==2.3.1
 newsapi-python==0.2.7
 ta==0.11.0  # Technical Analysis library
 
+# ML for Sentiment Analysis
+transformers==4.36.2  # HuggingFace transformers for FinBERT
+torch==2.1.2  # PyTorch backend for transformers
+spacy==3.7.4  # For Named Entity Recognition (symbol extraction)
+scikit-learn==1.4.0  # For additional ML utilities
+
 # Email
 aiosmtplib==3.0.1
 jinja2==3.1.3
