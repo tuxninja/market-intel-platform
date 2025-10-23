@@ -12,11 +12,24 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download FinBERT model to avoid download during runtime
+# This adds ~450MB to image size but ensures faster startup
+RUN python3 -c "from transformers import AutoTokenizer, AutoModelForSequenceClassification; \
+    model_name = 'yiyanghkust/finbert-tone'; \
+    print('Downloading FinBERT model...'); \
+    AutoTokenizer.from_pretrained(model_name); \
+    AutoModelForSequenceClassification.from_pretrained(model_name); \
+    print('FinBERT model cached successfully')"
+
 # Copy application code
 COPY . .
 
-# Create cache directory
+# Create cache directory for HuggingFace transformers
 RUN mkdir -p /app/.cache
+
+# Set HuggingFace cache directory
+ENV TRANSFORMERS_CACHE=/app/.cache
+ENV HF_HOME=/app/.cache
 
 # Expose port
 EXPOSE 8000

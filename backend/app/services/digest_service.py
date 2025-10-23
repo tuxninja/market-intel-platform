@@ -63,22 +63,26 @@ class DigestService:
 
         # Generate real trading signals using NEWS-DRIVEN signal generator
         try:
-            logger.info("Generating NEWS-DRIVEN trading signals (ML-powered)")
+            logger.info("🚀 Generating NEWS-DRIVEN trading signals (ML-powered with FinBERT)")
 
-            # NOTE: News-driven generator requires regular Session, not AsyncSession
-            # For now, use technical-only generator until we refactor for async
-            # TODO: Refactor news_driven_signal_generator for AsyncSession support
-            logger.warning("News-driven generator requires refactoring for async - using technical generator")
-            items = await signal_generator.generate_signals(max_signals=max_items)
-            logger.info(f"Generated {len(items)} technical signals")
+            # Use new ML-powered news-driven generator
+            news_generator = create_news_driven_generator(self.db)
+            items = await news_generator.generate_signals(max_signals=max_items)
+            logger.info(f"✅ Generated {len(items)} news-driven signals")
 
-            # If no signals, use demo
+            # If no news-driven signals, fall back to technical-only generator
             if not items:
-                logger.warning("No signals generated, falling back to demo signals")
+                logger.warning("⚠️ No news-driven signals found, trying technical-only generator")
+                items = await signal_generator.generate_signals(max_signals=max_items)
+                logger.info(f"Generated {len(items)} technical signals as fallback")
+
+            # If still no signals, use demo
+            if not items:
+                logger.warning("⚠️ No signals generated, falling back to demo signals")
                 items = self._generate_demo_signals(max_items)
         except Exception as gen_error:
-            logger.error(f"Error generating signals: {gen_error}", exc_info=True)
-            logger.warning("Falling back to demo signals")
+            logger.error(f"❌ Error generating signals: {gen_error}", exc_info=True)
+            logger.warning("⚠️ Falling back to demo signals due to error")
             items = self._generate_demo_signals(max_items)
 
         # Generate market context (placeholder for now)

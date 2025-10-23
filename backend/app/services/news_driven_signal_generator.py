@@ -9,8 +9,8 @@ import logging
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta
 import hashlib
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.ml_sentiment_service import ml_sentiment_analyzer
 from app.services.symbol_extractor_service import symbol_extractor
@@ -41,8 +41,8 @@ class NewsDrivenSignalGenerator:
     SIGNAL_EXPIRY_DAYS = 7  # Don't repeat signal for 7 days
     MAX_SIGNALS_PER_RUN = 10  # Limit signals per digest
 
-    def __init__(self, db: Session):
-        """Initialize the generator with database session."""
+    def __init__(self, db: AsyncSession):
+        """Initialize the generator with async database session."""
         self.db = db
 
     async def generate_signals(self, max_signals: int = 10) -> List[DigestItemResponse]:
@@ -445,13 +445,16 @@ class NewsDrivenSignalGenerator:
         """
         cutoff_date = datetime.utcnow() - timedelta(days=self.SIGNAL_EXPIRY_DAYS)
 
-        existing = self.db.query(SignalHistory).filter(
+        stmt = select(SignalHistory).where(
             and_(
                 SignalHistory.symbol == symbol,
                 SignalHistory.signal_type == signal_type,
                 SignalHistory.created_at >= cutoff_date
             )
-        ).first()
+        )
+
+        result = await self.db.execute(stmt)
+        existing = result.scalar_one_or_none()
 
         return existing is not None
 
@@ -480,11 +483,11 @@ class NewsDrivenSignalGenerator:
         )
 
         self.db.add(history)
-        self.db.commit()
+        await self.db.commit()
 
         logger.debug(f"Recorded signal history for {opportunity['symbol']}")
 
 
-def create_news_driven_generator(db: Session) -> NewsDrivenSignalGenerator:
-    """Factory function to create signal generator with DB session."""
+def create_news_driven_generator(db: AsyncSession) -> NewsDrivenSignalGenerator:
+    """Factory function to create signal generator with async DB session."""
     return NewsDrivenSignalGenerator(db)
