@@ -6,7 +6,7 @@ Tracks previously sent signals to avoid duplicates.
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON
 from sqlalchemy.sql import func
-from app.models.base import Base
+from app.database import Base
 
 
 class SignalHistory(Base):
