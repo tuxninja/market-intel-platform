@@ -51,7 +51,7 @@ export default function DashboardPage() {
             Welcome back, {user?.full_name || 'Trader'}!
           </h1>
           <p className="text-gray-300">
-            Here's your market intelligence overview
+            Here's your trading overview
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export default function DashboardPage() {
           <Card>
             <h3 className="text-xl font-bold text-white mb-3">📊 Daily Digest</h3>
             <p className="text-gray-300 mb-4">
-              Get curated market intelligence with actionable trading signals delivered daily.
+              Get ML-powered trading signals from breaking news delivered daily.
             </p>
             <Link href="/digest">
               <Button variant="ghost" size="sm">

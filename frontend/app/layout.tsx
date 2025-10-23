@@ -7,8 +7,8 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 
 export const metadata: Metadata = {
-  title: "Market Intelligence Platform",
-  description: "AI-powered market intelligence and trading signals",
+  title: "TradeTheHype",
+  description: "AI-powered trading signals from breaking news",
 };
 
 export default function RootLayout({

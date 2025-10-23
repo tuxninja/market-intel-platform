@@ -13,7 +13,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
           <p className="text-gray-300">
-            Sign in to access your market intelligence digest
+            Sign in to access your trading signals
           </p>
         </div>
 

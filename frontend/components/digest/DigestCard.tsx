@@ -184,7 +184,7 @@ const DigestCard: React.FC<DigestCardProps> = ({ item }) => {
 
       {/* Footer */}
       <div className="flex items-center justify-between text-xs text-neutral pt-2 border-t border-neutral/20">
-        <span>{item.source || 'Market Intelligence'}</span>
+        <span>{item.source || 'TradeTheHype'}</span>
         <span>{new Date(item.created_at).toLocaleString()}</span>
       </div>
     </Card>

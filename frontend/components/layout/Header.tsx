@@ -37,10 +37,10 @@ const Header: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-lg">M</span>
+              <span className="text-black font-bold text-lg">T</span>
             </div>
             <span className="text-white font-bold text-xl hidden sm:inline">
-              Market Intel
+              TradeTheHype
             </span>
           </Link>
 
