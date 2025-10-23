@@ -1,7 +1,7 @@
-# Claude Code Session Notes - Market Intelligence Platform
+# Claude Code Session Notes - TradeTheHype
 
-**Last Updated**: October 16, 2025
-**Project**: Market Intelligence Platform (SaaS Trading Signals)
+**Last Updated**: October 22, 2025
+**Project**: TradeTheHype (AI-Powered Trading Signals SaaS)
 
 ---
 
@@ -10,11 +10,11 @@
 **Goal**: Build a $1K MRR SaaS product providing AI-powered trading signals
 **Timeline**: 16-20 weeks part-time (10 hrs/week)
 **Infrastructure**: AWS + Supabase ONLY (no Vercel, Netlify, etc.)
-**Cost**: < $10/month total
+**Cost**: < $20/month total (increased from $10 due to ML)
 
 ---
 
-## ✅ Current Progress (50% Complete)
+## ✅ Current Progress (65% Complete)
 
 ### Phase 0: Pre-Development ✅
 - Repository set up
@@ -32,7 +32,7 @@
   - Email template displays news with sentiment emojis
   - Backend deployed to ECS (Docker image in ECR)
 
-### Phase 2: Web Dashboard ✅ (Just Completed!)
+### Phase 2: Web Dashboard ✅
 - **Frontend Enhancements**:
   - News articles display in DigestCard component
   - Market Snapshot widget (VIX, SPY, DIA, QQQ)
@@ -46,6 +46,35 @@
   - Deployment guide (DEPLOYMENT_GUIDE.md)
   - next.config.js updated with standalone output
 
+### Phase 2.5: ML-Powered Signal System ✅ (MAJOR UPGRADE!)
+- **Event-Driven Signal Generation**:
+  - Replaced watchlist-based with news-driven signals
+  - Only generates signals when breaking news occurs (<6 hours old)
+  - Eliminates stale price data and repeated recommendations
+
+- **Machine Learning Integration**:
+  - FinBERT sentiment analysis (85% accuracy vs 65% VADER)
+  - Batch processing for efficiency
+  - Confidence scoring for every signal
+
+- **Smart Components**:
+  - `ml_sentiment_service.py` - FinBERT ML model
+  - `symbol_extractor_service.py` - Advanced ticker extraction (80+ company names)
+  - `news_driven_signal_generator.py` - Event-driven engine (472 lines)
+  - `signal_history` table - Prevents duplicate signals for 7 days
+
+- **Production Ready**:
+  - Async/await throughout (AsyncSession support)
+  - Docker image with pre-cached FinBERT model (~1.5GB)
+  - Automated deployment script (`deploy_ml_signals.sh`)
+  - Graceful fallback: ML → Technical → Demo
+
+- **Documentation**:
+  - `ML_SIGNAL_UPGRADE.md` (630 lines) - Technical deep dive
+  - `SIGNAL_UPGRADE_SUMMARY.md` - Executive summary
+  - `ML_PRODUCTION_DEPLOYMENT.md` - Deployment guide
+  - Cost analysis, troubleshooting, monitoring guides
+
 ---
 
 ## 🚀 Infrastructure Setup
@@ -53,9 +82,10 @@
 ### Backend (Production - LIVE):
 - **Service**: AWS ECS Fargate
 - **Image**: `907391580367.dkr.ecr.us-east-1.amazonaws.com/market-intel-backend:latest`
-- **Digest**: `sha256:2793c5684b...` (with news articles)
+- **Resources**: 0.5 vCPU, 2GB RAM (upgraded for FinBERT)
 - **Scheduled Task**: Daily digest at 6:30 AM Arizona Time
-- **Cost**: $1-5/month
+- **Features**: ML-powered news-driven signals, real-time price validation
+- **Cost**: $15-17/month (increased due to ML model memory requirements)
 
 ### Frontend (Ready to Deploy):
 - **Service**: AWS App Runner (NOT Vercel!)
@@ -84,12 +114,15 @@
 - ✅ Supabase for PostgreSQL database
 - ❌ NO Vercel, Netlify, or other providers
 
-### 2. Free APIs for Data
-**Why**: Zero ongoing costs
+### 2. Free/Low-Cost Data Sources
+**Why**: Minimize ongoing API costs
 **Sources**:
 - yfinance (stock prices - FREE, no API key)
-- 5 RSS feeds (news - FREE)
-- VADER + TextBlob (sentiment - FREE)
+- Alpha Vantage (backup stock data - FREE, 5 calls/min)
+- NewsAPI (breaking news - FREE, 100 calls/day)
+- 5 RSS feeds (fallback news - FREE)
+- FinBERT ML model (sentiment - FREE, runs locally)
+- PyTorch (ML framework - FREE, open source)
 
 ### 3. Next.js 14 with App Router
 **Why**: Modern, fast, production-ready
