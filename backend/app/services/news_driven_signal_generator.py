@@ -478,7 +478,7 @@ class NewsDrivenSignalGenerator:
             sentiment_score=opportunity["news_sentiment"],
             technical_score=signal.metadata.get("technical_score"),
             price_at_signal=signal.metadata.get("current_price"),
-            metadata=signal.metadata,
+            signal_metadata=signal.metadata,
             expires_at=datetime.utcnow() + timedelta(days=self.SIGNAL_EXPIRY_DAYS)
         )
 

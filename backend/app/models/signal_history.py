@@ -28,7 +28,7 @@ class SignalHistory(Base):
     sentiment_score = Column(Float, nullable=True)
     technical_score = Column(Float, nullable=True)
     price_at_signal = Column(Float, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    signal_metadata = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=False)  # Stale date
 
