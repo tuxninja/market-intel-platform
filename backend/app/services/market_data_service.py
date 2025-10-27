@@ -344,13 +344,13 @@ class MarketDataService:
         Get current values for major market indices.
 
         Returns:
-            Dict with SPY, DIA, QQQ, VIX data
+            Dict with S&P 500, DOW, NASDAQ, VIX data
         """
         indices = {
-            "SPY": "^GSPC",  # S&P 500
-            "DIA": "^DJI",   # Dow Jones
-            "QQQ": "^IXIC",  # NASDAQ
-            "VIX": "^VIX",   # Volatility Index
+            "S&P 500": "^GSPC",  # S&P 500 Index
+            "DOW": "^DJI",       # Dow Jones Industrial Average
+            "NASDAQ": "^IXIC",   # NASDAQ Composite
+            "VIX": "^VIX",       # Volatility Index
         }
 
         result = {}

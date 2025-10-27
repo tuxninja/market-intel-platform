@@ -164,39 +164,39 @@ class DigestService:
             # Get real market indices data
             indices = await market_data_service.get_market_indices()
 
-            # Determine overall market trend based on SPY
-            spy_data = indices.get("SPY", {})
-            spy_change = spy_data.get("raw_change", 0)
-            spy_level = spy_data.get("level", 0)
+            # Determine overall market trend based on S&P 500
+            sp500_data = indices.get("S&P 500", {})
+            sp500_change = sp500_data.get("raw_change", 0)
+            sp500_level = sp500_data.get("level", 0)
 
             # Determine market trend with more granularity
-            if spy_change > 1.0:
+            if sp500_change > 1.0:
                 market_trend = "STRONGLY BULLISH"
                 trend_description = "Risk-on environment. Tech and growth stocks leading."
-            elif spy_change > 0.3:
+            elif sp500_change > 0.3:
                 market_trend = "BULLISH"
                 trend_description = "Positive momentum. Buyers in control."
-            elif spy_change > -0.3:
+            elif sp500_change > -0.3:
                 market_trend = "NEUTRAL"
                 trend_description = "Consolidation phase. Awaiting catalyst."
-            elif spy_change > -1.0:
+            elif sp500_change > -1.0:
                 market_trend = "BEARISH"
                 trend_description = "Selling pressure. Defensive positioning recommended."
             else:
                 market_trend = "STRONGLY BEARISH"
                 trend_description = "Risk-off mode. Flight to safety."
 
-            # Check QQQ vs SPY performance for tech strength
-            qqq_data = indices.get("QQQ", {})
-            qqq_change = qqq_data.get("raw_change", 0)
-            tech_leadership = "Tech leading" if qqq_change > spy_change + 0.2 else "Tech lagging" if qqq_change < spy_change - 0.2 else "Tech in-line"
+            # Check NASDAQ vs S&P 500 performance for tech strength
+            nasdaq_data = indices.get("NASDAQ", {})
+            nasdaq_change = nasdaq_data.get("raw_change", 0)
+            tech_leadership = "Tech leading" if nasdaq_change > sp500_change + 0.2 else "Tech lagging" if nasdaq_change < sp500_change - 0.2 else "Tech in-line"
 
             return {
                 "market_trend": market_trend,
                 "trend_description": trend_description,
                 "tech_leadership": tech_leadership,
                 "major_indices": indices,
-                "spy_level": spy_level,
+                "sp500_level": sp500_level,
                 "sector_rotation": f"{tech_leadership}. Watch financials and energy for rotation signals.",
             }
         except Exception as e:
@@ -207,11 +207,11 @@ class DigestService:
                 "trend_description": "Market data temporarily unavailable. Monitor major indices for direction.",
                 "tech_leadership": "Tech sentiment mixed",
                 "major_indices": {
-                    "SPY": {"change": "+0.2%", "level": 580.0, "raw_change": 0.2},
-                    "DIA": {"change": "+0.1%", "level": 430.0, "raw_change": 0.1},
-                    "QQQ": {"change": "+0.4%", "level": 475.0, "raw_change": 0.4},
+                    "S&P 500": {"change": "+0.2%", "level": 5800.0, "raw_change": 0.2},
+                    "DOW": {"change": "+0.1%", "level": 42500.0, "raw_change": 0.1},
+                    "NASDAQ": {"change": "+0.4%", "level": 18200.0, "raw_change": 0.4},
                 },
-                "spy_level": 580.0,
+                "sp500_level": 5800.0,
                 "sector_rotation": "Mixed sector performance. Technology showing relative strength.",
             }
 
@@ -269,8 +269,8 @@ class DigestService:
                 symbol="NVDA",
                 title="NVIDIA Breaks Out: AI Chip Demand Surges Post-Earnings",
                 summary="NVDA up 7.2% after crushing Q4 earnings with data center revenue +217% YoY. Stock cleared $950 resistance.",
-                explanation="**WHY THIS MATTERS**: NVIDIA's data center revenue ($18.4B vs $11.0B est.) signals explosive AI infrastructure demand. Major cloud providers (MSFT, GOOGL, AMZN) are accelerating AI compute spending. Technical breakout above $950 on 3x average volume confirms institutional buying. This represents a continuation of the AI mega-trend with NVDA as the primary beneficiary.",
-                how_to_trade="**ACTION**: BUY on pullbacks to $940-950 support. **STOP**: $920 (-3.5%). **TARGETS**: $1,020 (+7%), $1,100 (+15%). **SIZE**: 3-5% of portfolio. **TIMEFRAME**: 2-4 weeks swing trade. **OPTIONS**: Consider Feb 16 $950 calls for leveraged exposure. **WATCH**: Any Fed hawkishness or tech sector rotation would be exit signal.",
+                explanation="**🟢 BUY**: NVIDIA's data center revenue ($18.4B vs $11.0B est.) signals explosive AI infrastructure demand. Major cloud providers (MSFT, GOOGL, AMZN) are accelerating AI compute spending. Technical breakout above $950 on 3x average volume confirms institutional buying. This represents a continuation of the AI mega-trend with NVDA as the primary beneficiary.",
+                how_to_trade="**ENTRY**: Pullbacks to $940-950 support. **STOP**: $920 (-3.5%). **TARGETS**: $1,020 (+7%), $1,100 (+15%). **SIZE**: 3-5% of portfolio. **TIMEFRAME**: 2-4 weeks swing trade. **OPTIONS**: Consider Feb 16 $950 calls for leveraged exposure. **WATCH**: Any Fed hawkishness or tech sector rotation would be exit signal.",
                 sentiment_score=0.82,
                 confidence_score=0.88,
                 priority="high",
@@ -284,8 +284,8 @@ class DigestService:
                 symbol="SPY",
                 title="S&P 500 Tests Key 5,800 Resistance - Breakout or Rejection?",
                 summary="SPY approaching major resistance at 5,800 with mixed volume. Fed decision Wednesday adds volatility risk.",
-                explanation="**WHY THIS MATTERS**: S&P 500 is at a critical juncture. The 5,800 level has capped rallies 3 times in past month. Break above = new highs targeting 6,000. Rejection = -5% pullback to 5,500 support. This week's Fed meeting (Wed 2pm ET) will determine direction. Current P/E at 21.5x suggests limited upside without earnings growth confirmation. Institutional flows show cautious positioning ahead of FOMC.",
-                how_to_trade="**ACTION**: WAIT for Fed decision. **IF BREAKS 5,800 on volume**: Enter long with $5,810 stop, target $5,950. **IF REJECTS**: Short at $5,795 with $5,820 stop, target $5,650. **ALTERNATIVES**: Sell $5,800 calls for premium if expecting range-bound. **HEDGE**: VIX calls as cheap insurance into FOMC.",
+                explanation="**⚪ WAIT**: S&P 500 is at a critical juncture. The 5,800 level has capped rallies 3 times in past month. Break above = new highs targeting 6,000. Rejection = -5% pullback to 5,500 support. This week's Fed meeting (Wed 2pm ET) will determine direction. Current P/E at 21.5x suggests limited upside without earnings growth confirmation. Institutional flows show cautious positioning ahead of FOMC.",
+                how_to_trade="**STRATEGY**: Wait for Fed decision. **IF BREAKS 5,800 on volume**: Enter long with $5,810 stop, target $5,950. **IF REJECTS**: Short at $5,795 with $5,820 stop, target $5,650. **ALTERNATIVES**: Sell $5,800 calls for premium if expecting range-bound. **HEDGE**: VIX calls as cheap insurance into FOMC.",
                 sentiment_score=0.15,
                 confidence_score=0.72,
                 priority="high",
@@ -299,8 +299,8 @@ class DigestService:
                 symbol="TSLA",
                 title="Tesla Guidance Miss Triggers -8% Drop Despite Delivery Beat",
                 summary="TSLA down sharply as management warns of \"slight decline\" in 2025 deliveries vs growth expectations",
-                explanation="**WHY THIS MATTERS**: While Q4 deliveries beat (496K vs 490K est), Elon's comments on 2025 outlook (-2% to flat growth) shocked bulls expecting +15-20%. This is a sentiment killer. Stock broke $340 support and testing $320. Bears argue valuation (75x P/E) can't justify stagnant growth. Options positioning shows heavy put buying. Upgrade cycle delay and China competition (BYD) are real concerns.",
-                how_to_trade="**ACTION**: AVOID longs here - falling knife. **FOR BEARS**: Short $330, stop $345, target $285 (200-day MA). **FOR BULLS**: Wait for $280-300 support zone. **RISK MANAGEMENT**: This is high-beta volatility - use tight stops. **OPTIONS**: Feb $320 puts gaining premium. **WATCH**: Delivery data from China competitors.",
+                explanation="**🔴 SHORT/AVOID**: While Q4 deliveries beat (496K vs 490K est), Elon's comments on 2025 outlook (-2% to flat growth) shocked bulls expecting +15-20%. This is a sentiment killer. Stock broke $340 support and testing $320. Bears argue valuation (75x P/E) can't justify stagnant growth. Options positioning shows heavy put buying. Upgrade cycle delay and China competition (BYD) are real concerns.",
+                how_to_trade="**FOR BEARS**: Short $330, stop $345, target $285 (200-day MA). **FOR BULLS**: Wait for $280-300 support zone before considering entry. **RISK**: High-beta volatility - use tight stops. **OPTIONS**: Feb $320 puts gaining premium. **WATCH**: Delivery data from China competitors.",
                 sentiment_score=-0.68,
                 confidence_score=0.79,
                 priority="high",
@@ -314,8 +314,8 @@ class DigestService:
                 symbol="GLD",
                 title="Gold Surges to $2,150 on Fed Pivot Speculation",
                 summary="Gold up 2.1% as 10-year yield drops below 4.0%. Safe haven bid increasing ahead of FOMC meeting.",
-                explanation="**WHY THIS MATTERS**: Gold breaking out as bond yields fall and dollar weakens. Market pricing 75% chance of rate cut by June. Gold acts as inflation hedge + benefits from falling real rates. Technical breakout above $2,120 resistance opens path to $2,200. Central bank buying (China, India) providing support. Geopolitical tensions (Middle East) adding safe-haven premium.",
-                how_to_trade="**ACTION**: BUY dips to $2,130-2,140. **STOP**: $2,100. **TARGETS**: $2,200 (+2.3%), $2,250 (+4.6%). **SIZE**: 2-3% allocation. **ALTERNATIVES**: GLD ETF for liquidity, GDX for leveraged miners exposure. **HEDGE**: Works as portfolio insurance if stocks correct. **WATCH**: DXY dollar index - inverse correlation.",
+                explanation="**🟢 BUY**: Gold breaking out as bond yields fall and dollar weakens. Market pricing 75% chance of rate cut by June. Gold acts as inflation hedge + benefits from falling real rates. Technical breakout above $2,120 resistance opens path to $2,200. Central bank buying (China, India) providing support. Geopolitical tensions (Middle East) adding safe-haven premium.",
+                how_to_trade="**ENTRY**: Dips to $2,130-2,140. **STOP**: $2,100. **TARGETS**: $2,200 (+2.3%), $2,250 (+4.6%). **SIZE**: 2-3% allocation. **ALTERNATIVES**: GLD ETF for liquidity, GDX for leveraged miners exposure. **HEDGE**: Works as portfolio insurance if stocks correct. **WATCH**: DXY dollar index - inverse correlation.",
                 sentiment_score=0.72,
                 confidence_score=0.76,
                 priority="medium",
@@ -329,8 +329,8 @@ class DigestService:
                 symbol="VIX",
                 title="VIX Spikes to 18.5 (+22%) as Fed Meeting Uncertainty Builds",
                 summary="Volatility index jumping as traders hedge into FOMC decision. Options skew tilting to puts.",
-                explanation="**WHY THIS MATTERS**: VIX surge from 15 to 18.5 signals market nervousness before Fed meeting Wed. When VIX >18, expect 1-2% daily S&P swings. Put/call ratio at 1.15 (elevated) shows defensive positioning. Historical pattern: VIX spikes into FOMC often reverse sharply after decision. Current level offers opportunity - either hedge gets cheaper after Wed, or protection pays off if Fed surprises hawkish.",
-                how_to_trade="**DEFENSIVE PLAY**: Buy VIX calls expiring Friday (cheap lottery tickets if Fed shock). **AGGRESSIVE**: Short VIX after Fed decision for mean reversion to 14-15. **STOCK STRATEGY**: Reduce position sizes or add SPY put spreads before FOMC. **POST-FOMC**: VIX likely drops -20-30% if no surprises, creating entry opportunity in stocks. **CONTRARIAN**: High VIX = buy stocks when fear peaks.",
+                explanation="**⚪ TACTICAL OPPORTUNITY**: VIX surge from 15 to 18.5 signals market nervousness before Fed meeting Wed. When VIX >18, expect 1-2% daily S&P swings. Put/call ratio at 1.15 (elevated) shows defensive positioning. Historical pattern: VIX spikes into FOMC often reverse sharply after decision. Current level offers opportunity - either hedge gets cheaper after Wed, or protection pays off if Fed surprises hawkish.",
+                how_to_trade="**DEFENSIVE**: Buy VIX calls expiring Friday (cheap lottery if Fed shock). **AGGRESSIVE**: Short VIX after Fed decision for mean reversion to 14-15. **STOCK HEDGE**: Reduce position sizes or add SPY put spreads before FOMC. **POST-FOMC**: VIX likely drops -20-30% if no surprises, creating entry opportunity in stocks. **CONTRARIAN**: High VIX = buy stocks when fear peaks.",
                 sentiment_score=-0.45,
                 confidence_score=0.81,
                 priority="high",
@@ -344,8 +344,8 @@ class DigestService:
                 symbol="QQQ",
                 title="Nasdaq 100 Outperforming as Tech Leadership Resumes",
                 summary="QQQ up 1.8% vs SPY +0.7%. Mega-cap tech driving markets higher on AI optimism.",
-                explanation="**WHY THIS MATTERS**: Nasdaq 100 showing clear strength vs S&P 500, signaling tech leadership returning. This rotation typically precedes broader market rallies. Top 7 holdings (AAPL, MSFT, NVDA, GOOGL, AMZN, META, TSLA) account for 50% of index - if they run, QQQ flies. Chart shows breakout above 50-day MA with improving breadth.",
-                how_to_trade="**ACTION**: BUY QQQ on dips to $470-472. **STOP**: $465. **TARGETS**: $485 (+3%), $495 (+5%). **LEVERAGE**: Consider TQQQ for 3x exposure if bullish. **PAIRS TRADE**: Long QQQ / Short IWM (small caps) to capture tech outperformance. **HEDGE**: If tech fails, this trade fails - use tight stops.",
+                explanation="**🟢 BUY**: Nasdaq 100 showing clear strength vs S&P 500, signaling tech leadership returning. This rotation typically precedes broader market rallies. Top 7 holdings (AAPL, MSFT, NVDA, GOOGL, AMZN, META, TSLA) account for 50% of index - if they run, QQQ flies. Chart shows breakout above 50-day MA with improving breadth.",
+                how_to_trade="**ENTRY**: Dips to $470-472. **STOP**: $465. **TARGETS**: $485 (+3%), $495 (+5%). **LEVERAGE**: Consider TQQQ for 3x exposure if bullish. **PAIRS TRADE**: Long QQQ / Short IWM (small caps) to capture tech outperformance. **HEDGE**: If tech fails, this trade fails - use tight stops.",
                 sentiment_score=0.75,
                 confidence_score=0.80,
                 priority="high",

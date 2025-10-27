@@ -223,20 +223,26 @@ class EmailService:
         else:
             trend_color = "#ffd700"
 
-        # Generate index stats HTML with proper ordering (SPY, QQQ, DIA)
-        index_order = ['SPY', 'QQQ', 'DIA']
+        # Generate index stats HTML with proper ordering (S&P 500, NASDAQ, DOW)
+        index_order = ['S&P 500', 'NASDAQ', 'DOW']
         index_stats_html = ""
-        for symbol in index_order:
-            if symbol in major_indices:
-                data = major_indices[symbol]
+        for index_name in index_order:
+            if index_name in major_indices:
+                data = major_indices[index_name]
                 level = data.get('level', 0)
                 change = data.get('change', '+0.0%')
                 change_color = "#00ff88" if change.startswith('+') else "#ff4444" if change.startswith('-') else "#8e8e93"
 
+                # Format display: show as 5,800 instead of 5800.00 for S&P
+                if level > 1000:
+                    level_display = f"{level:,.0f}"
+                else:
+                    level_display = f"{level:.2f}"
+
                 index_stats_html += f"""
                     <div class="market-stat">
-                        <div class="stat-label">{symbol}</div>
-                        <div class="stat-value">{level:.2f}</div>
+                        <div class="stat-label">{index_name}</div>
+                        <div class="stat-value">{level_display}</div>
                         <div class="stat-sublabel" style="color: {change_color} !important;">{change}</div>
                     </div>"""
 
