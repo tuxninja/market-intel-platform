@@ -209,22 +209,36 @@ class EmailService:
 
         # Get market context if available
         market_info = digest.market_context if digest.market_context else {}
-        market_trend = market_info.get('market_trend', 'bullish').title()
+        market_trend = market_info.get('market_trend', 'NEUTRAL')
+        trend_description = market_info.get('trend_description', 'Market data temporarily unavailable')
+        tech_leadership = market_info.get('tech_leadership', 'Tech sentiment mixed')
         major_indices = market_info.get('major_indices', {})
+        vix_trading_implication = vix_info.get('trading_implication', '')
 
-        # Generate index stats HTML
+        # Determine trend color
+        if 'BULLISH' in market_trend:
+            trend_color = "#00ff88"
+        elif 'BEARISH' in market_trend:
+            trend_color = "#ff4444"
+        else:
+            trend_color = "#ffd700"
+
+        # Generate index stats HTML with proper ordering (SPY, QQQ, DIA)
+        index_order = ['SPY', 'QQQ', 'DIA']
         index_stats_html = ""
-        for symbol, data in major_indices.items():
-            level = data.get('level', 0)
-            change = data.get('change', '+0.0%')
-            change_color = "#00ff88" if change.startswith('+') else "#ff4444" if change.startswith('-') else "#8e8e93"
+        for symbol in index_order:
+            if symbol in major_indices:
+                data = major_indices[symbol]
+                level = data.get('level', 0)
+                change = data.get('change', '+0.0%')
+                change_color = "#00ff88" if change.startswith('+') else "#ff4444" if change.startswith('-') else "#8e8e93"
 
-            index_stats_html += f"""
-                <div class="market-stat">
-                    <div class="stat-label">{symbol}</div>
-                    <div class="stat-value">{level:.2f}</div>
-                    <div class="stat-sublabel" style="color: {change_color} !important;">{change}</div>
-                </div>"""
+                index_stats_html += f"""
+                    <div class="market-stat">
+                        <div class="stat-label">{symbol}</div>
+                        <div class="stat-value">{level:.2f}</div>
+                        <div class="stat-sublabel" style="color: {change_color} !important;">{change}</div>
+                    </div>"""
 
         return f"""
         <div class="market-summary">
@@ -233,14 +247,18 @@ class EmailService:
                 <div class="market-stat">
                     <div class="stat-label">VIX</div>
                     <div class="stat-value" style="color: {regime_color};">{vix_display}</div>
-                    <div class="stat-sublabel">{vix_regime.replace('_', ' ').title()} Volatility</div>
+                    <div class="stat-sublabel">{vix_regime.replace('_', ' ').title()}</div>
                 </div>
                 {index_stats_html}
                 <div class="market-stat">
                     <div class="stat-label">MARKET TREND</div>
-                    <div class="stat-value" style="color: #00c6ff;">{market_trend}</div>
-                    <div class="stat-sublabel">Current Direction</div>
+                    <div class="stat-value" style="color: {trend_color};">{market_trend}</div>
+                    <div class="stat-sublabel">{tech_leadership}</div>
                 </div>
+            </div>
+            <div style="background: rgba(46, 46, 46, 0.5); padding: 15px; margin-top: 20px; border-radius: 8px; border-left: 4px solid {trend_color};">
+                <div style="font-size: 13px; color: #e5e5ea; margin-bottom: 8px;"><strong>📈 Market Analysis:</strong> {trend_description}</div>
+                <div style="font-size: 12px; color: #8e8e93;"><strong>💡 VIX Strategy:</strong> {vix_trading_implication}</div>
             </div>
         </div>
         """
