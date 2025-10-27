@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.services.digest_service import DigestService
 from app.services.email_service import email_service
-from app.database import init_db, close_db
+from app.database import init_db, close_db, AsyncSessionLocal
 from app.config import settings
 
 # Setup logging
@@ -46,36 +46,44 @@ async def send_digest(
         hours_lookback: Hours to look back for news
     """
     try:
-        # Initialize database (optional - digest works without it)
+        # Initialize database
         try:
             await init_db()
             logger.info("Database initialized")
         except Exception as db_error:
             logger.warning(f"Database connection failed (continuing without it): {db_error}")
 
-        # Generate digest
-        logger.info(f"Generating digest: max_items={max_items}, lookback={hours_lookback}h")
-        digest_service = DigestService(None)  # No DB session needed for now
-        digest = await digest_service.generate_daily_digest(
-            max_items=max_items,
-            hours_lookback=hours_lookback
-        )
+        # Create database session
+        async with AsyncSessionLocal() as db_session:
+            try:
+                # Generate digest with database session
+                logger.info(f"Generating digest: max_items={max_items}, lookback={hours_lookback}h")
+                digest_service = DigestService(db_session)
+                digest = await digest_service.generate_daily_digest(
+                    max_items=max_items,
+                    hours_lookback=hours_lookback
+                )
 
-        logger.info(f"Generated digest with {digest.total_items} items")
+                logger.info(f"Generated digest with {digest.total_items} items")
 
-        # Send email
-        logger.info(f"Sending digest email to {email_to}")
-        success = await email_service.send_daily_digest(
-            recipient_email=email_to,
-            digest=digest
-        )
+                # Send email
+                logger.info(f"Sending digest email to {email_to}")
+                success = await email_service.send_daily_digest(
+                    recipient_email=email_to,
+                    digest=digest
+                )
 
-        if success:
-            logger.info("✅ Daily digest sent successfully!")
-            return 0
-        else:
-            logger.error("❌ Failed to send daily digest")
-            return 1
+                if success:
+                    logger.info("✅ Daily digest sent successfully!")
+                    return 0
+                else:
+                    logger.error("❌ Failed to send daily digest")
+                    return 1
+
+            except Exception as e:
+                logger.error(f"Error in digest generation: {e}", exc_info=True)
+                await db_session.rollback()
+                return 1
 
     except Exception as e:
         logger.error(f"Error sending digest: {e}", exc_info=True)

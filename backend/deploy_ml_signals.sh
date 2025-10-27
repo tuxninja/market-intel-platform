@@ -45,15 +45,9 @@ echo ""
 
 # Step 2: Run database migration locally (optional)
 echo -e "${YELLOW}[2/7] Running database migration...${NC}"
-read -p "Run migration locally now? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    cd /Users/jasonriedel/PyCharmProjects/tradethehype_com/backend
-    alembic upgrade head
-    echo -e "${GREEN}✓ Migration complete${NC}"
-else
-    echo -e "${YELLOW}Skipped - make sure to run 'alembic upgrade head' manually${NC}"
-fi
+echo -e "${YELLOW}Migration will run automatically in ECS container during deployment${NC}"
+echo -e "${YELLOW}Skipping local migration (requires .env file)${NC}"
+echo -e "${GREEN}✓ Will run in container${NC}"
 echo ""
 
 # Step 3: Build Docker image with FinBERT
