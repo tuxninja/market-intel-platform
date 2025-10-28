@@ -13,6 +13,7 @@ from app.schemas.digest import DigestItemResponse, DigestResponse
 from app.services.signal_generator import signal_generator
 from app.services.news_driven_signal_generator import create_news_driven_generator
 from app.services.market_data_service import market_data_service
+from app.services.social_sentiment_service import social_sentiment_service
 
 logger = logging.getLogger(__name__)
 
@@ -85,10 +86,25 @@ class DigestService:
             logger.warning("⚠️ Falling back to demo signals due to error")
             items = self._generate_demo_signals(max_items)
 
-        # Generate market context (placeholder for now)
+        # Fetch social sentiment data (Reddit/WallStreetBets)
+        trending_social = []
+        try:
+            logger.info("📱 Fetching social sentiment from Reddit/WallStreetBets")
+            social_mentions = await social_sentiment_service.get_trending_stocks(limit=50)
+
+            # Enrich signals with social data
+            items = await self._enrich_with_social_data(items, social_mentions)
+
+            # Get top 5 trending for display
+            trending_social = [mention.to_dict() for mention in social_mentions[:5]]
+            logger.info(f"✅ Got {len(social_mentions)} trending stocks from social media")
+        except Exception as social_error:
+            logger.warning(f"⚠️ Could not fetch social sentiment: {social_error}")
+
+        # Generate market context
         market_context = await self._get_market_context()
 
-        # Generate VIX regime info (placeholder for now)
+        # Generate VIX regime info
         vix_regime = await self._get_vix_regime()
 
         return DigestResponse(
@@ -97,6 +113,7 @@ class DigestService:
             total_items=len(items),
             market_context=market_context,
             vix_regime=vix_regime,
+            trending_social=trending_social,
         )
 
     async def save_signal(
@@ -251,6 +268,47 @@ class DigestService:
                 "description": "Moderate volatility environment. Market digesting recent moves.",
                 "trading_implication": "Normal volatility. Standard position sizing appropriate.",
             }
+
+    async def _enrich_with_social_data(
+        self,
+        signals: List[DigestItemResponse],
+        social_mentions: List
+    ) -> List[DigestItemResponse]:
+        """
+        Enrich trading signals with social sentiment data.
+
+        Adds social mention counts, momentum, and hype indicators to signals
+        where the symbol is trending on social media.
+
+        Args:
+            signals: List of trading signals
+            social_mentions: List of SocialMention objects from social_sentiment_service
+
+        Returns:
+            Enriched signals with social_data populated
+        """
+        # Create lookup dict for faster access
+        social_lookup = {mention.symbol: mention for mention in social_mentions}
+
+        for signal in signals:
+            if not signal.symbol:
+                continue
+
+            # Check if this symbol is trending
+            social_mention = social_lookup.get(signal.symbol.upper())
+
+            if social_mention:
+                # Add social data to signal
+                signal.social_data = social_mention.to_dict()
+
+                # Boost confidence if highly trending
+                if social_mention.momentum > 50 and social_mention.mentions > 200:
+                    # Boost confidence by up to 0.1 for extreme hype
+                    boost = min(0.1, social_mention.momentum / 1000)
+                    signal.confidence_score = min(1.0, (signal.confidence_score or 0.5) + boost)
+                    logger.info(f"📈 Boosted {signal.symbol} confidence due to social hype (+{boost:.2f})")
+
+        return signals
 
     def _generate_demo_signals(self, max_items: int) -> List[DigestItemResponse]:
         """

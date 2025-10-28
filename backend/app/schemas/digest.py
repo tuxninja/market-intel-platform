@@ -24,6 +24,7 @@ class DigestItemResponse(BaseModel):
         category: Signal category (trade_alert, watch_list, market_context)
         source: Data source
         news_articles: Related news articles that influenced this signal
+        social_data: Social media sentiment data (mentions, momentum, sentiment)
         metadata: Additional metadata
         created_at: Creation timestamp
     """
@@ -40,6 +41,7 @@ class DigestItemResponse(BaseModel):
     category: str = "market_context"
     source: Optional[str] = None
     news_articles: Optional[List[Dict[str, Any]]] = None
+    social_data: Optional[Dict[str, Any]] = None
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime
 
@@ -57,6 +59,7 @@ class DigestResponse(BaseModel):
         total_items: Total number of items
         market_context: Overall market context information
         vix_regime: VIX market regime information
+        trending_social: Top trending stocks on social media (Reddit/WSB)
     """
 
     generated_at: datetime
@@ -64,6 +67,7 @@ class DigestResponse(BaseModel):
     total_items: int
     market_context: Optional[Dict[str, Any]] = None
     vix_regime: Optional[Dict[str, Any]] = None
+    trending_social: Optional[List[Dict[str, Any]]] = None
 
 
 class DigestRequest(BaseModel):

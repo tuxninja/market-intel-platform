@@ -145,6 +145,7 @@ class EmailService:
         # Generate email sections
         header_html = self._generate_header(digest, recipient_name)
         market_summary_html = self._generate_market_summary(digest)
+        trending_social_html = self._generate_trending_social(digest)
         body_html = self._generate_body(bullish_items, bearish_items, neutral_items)
         footer_html = self._generate_footer()
 
@@ -163,6 +164,7 @@ class EmailService:
             <div class="email-container">
                 {header_html}
                 {market_summary_html}
+                {trending_social_html}
                 {body_html}
                 {footer_html}
             </div>
@@ -285,6 +287,84 @@ class EmailService:
         </div>
         """
 
+    def _generate_trending_social(self, digest: DigestResponse) -> str:
+        """Generate trending stocks from Reddit/WallStreetBets section."""
+        if not digest.trending_social or len(digest.trending_social) == 0:
+            return ""
+
+        # Build trending items HTML
+        trending_items_html = []
+
+        for idx, mention in enumerate(digest.trending_social, 1):
+            symbol = mention.get("symbol", "???")
+            mentions = mention.get("mentions", 0)
+            momentum = mention.get("momentum", 0)
+            sentiment = mention.get("sentiment_score", 0)
+            hype_level = mention.get("hype_level", "STABLE")
+
+            # Determine momentum emoji and color
+            if momentum > 100:
+                momentum_emoji = "🚀"
+                momentum_color = "#00ff88"
+            elif momentum > 50:
+                momentum_emoji = "📈"
+                momentum_color = "#00ff88"
+            elif momentum > 0:
+                momentum_emoji = "↑"
+                momentum_color = "#00ff88"
+            else:
+                momentum_emoji = "↓"
+                momentum_color = "#ff4444"
+
+            # Determine hype badge
+            if hype_level == "EXTREME":
+                hype_badge = '<span style="background: linear-gradient(135deg, #ff4444, #ff8844); padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">🔥 EXTREME HYPE</span>'
+            elif hype_level == "HIGH":
+                hype_badge = '<span style="background: #ff8844; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">🔥 HIGH HYPE</span>'
+            elif hype_level == "MODERATE":
+                hype_badge = '<span style="background: #ffaa44; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">📊 MODERATE</span>'
+            else:
+                hype_badge = '<span style="background: #666666; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">📊 STABLE</span>'
+
+            # Sentiment indicator
+            sentiment_color = "#00ff88" if sentiment > 0 else "#ff4444" if sentiment < 0 else "#888888"
+
+            trending_items_html.append(f"""
+                <div style="background: rgba(46, 46, 46, 0.5); padding: 12px; margin-bottom: 10px; border-radius: 6px; border-left: 3px solid {momentum_color};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div style="font-size: 15px; font-weight: bold; color: #e5e5ea;">
+                            #{idx} ${symbol}
+                        </div>
+                        <div>
+                            {hype_badge}
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #8e8e93; line-height: 1.6;">
+                        <span style="color: #e5e5ea;">{mentions:,}</span> mentions
+                        <span style="color: {momentum_color};">{momentum_emoji} {momentum:+.0f}%</span> (24h) |
+                        Sentiment: <span style="color: {sentiment_color};">{sentiment:+.2f}</span>
+                    </div>
+                </div>
+            """)
+
+        return f"""
+        <div style="margin: 30px 0;">
+            <div style="background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%); padding: 20px; border-radius: 12px; border: 1px solid #3a3a3c;">
+                <h2 style="color: #00ff88; margin: 0 0 15px 0; font-size: 18px; display: flex; align-items: center;">
+                    <span style="margin-right: 8px;">🔥</span>
+                    TRENDING ON REDDIT/WALLSTREETBETS
+                </h2>
+                <div style="font-size: 12px; color: #8e8e93; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #3a3a3c;">
+                    Top stocks being discussed by retail traders right now
+                </div>
+                {''.join(trending_items_html)}
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #3a3a3c; font-size: 11px; color: #636366; text-align: center;">
+                    💡 High momentum + positive sentiment = potential short-term trades | Always validate with technical analysis
+                </div>
+            </div>
+        </div>
+        """
+
     def _generate_body(
         self,
         bullish_items: List[DigestItemResponse],
@@ -340,6 +420,38 @@ class EmailService:
 
             # Build explanation with news articles
             explanation_html = f'<div style="font-size: 12px;">{item.explanation or "N/A"}'
+
+            # Add social hype indicator if available
+            if item.social_data:
+                social = item.social_data
+                hype_level = social.get('hype_level', 'STABLE')
+                mentions = social.get('mentions', 0)
+                momentum = social.get('momentum', 0)
+
+                # Determine badge style based on hype level
+                if hype_level == "EXTREME":
+                    badge_style = "background: linear-gradient(135deg, #ff4444, #ff8844); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; margin-top: 8px;"
+                    badge_text = "🔥 EXTREME HYPE ON REDDIT"
+                elif hype_level == "HIGH":
+                    badge_style = "background: #ff8844; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; margin-top: 8px;"
+                    badge_text = "🔥 HIGH HYPE ON REDDIT"
+                elif hype_level == "MODERATE":
+                    badge_style = "background: #ffaa44; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; margin-top: 8px;"
+                    badge_text = "📊 TRENDING ON REDDIT"
+                else:
+                    badge_style = None
+                    badge_text = None
+
+                if badge_style:
+                    momentum_emoji = "🚀" if momentum > 100 else "📈" if momentum > 50 else "↑"
+                    explanation_html += f'''
+                    <div style="margin-top: 10px; padding: 8px; background: rgba(255, 136, 68, 0.15); border-radius: 6px; border-left: 3px solid #ff8844;">
+                        <div style="{badge_style}">{badge_text}</div>
+                        <div style="font-size: 11px; color: #8e8e93; margin-top: 6px;">
+                            {mentions:,} mentions {momentum_emoji} {momentum:+.0f}% (24h)
+                        </div>
+                    </div>
+                    '''
 
             # Add news articles if available
             if item.news_articles:
