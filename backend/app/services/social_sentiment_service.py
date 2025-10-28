@@ -149,9 +149,9 @@ class SocialSentimentService:
 
                             mention = SocialMention(
                                 symbol=symbol,
-                                mentions=item.get("mentions", 0),
-                                mentions_24h_ago=item.get("mentions_24h_ago", 0),
-                                sentiment_score=item.get("sentiment", 0.0),
+                                mentions=item.get("mentions") or 0,
+                                mentions_24h_ago=item.get("mentions_24h_ago") or 0,
+                                sentiment_score=item.get("sentiment") or 0.0,
                                 rank=idx,
                                 source="reddit_multi"
                             )
@@ -198,7 +198,7 @@ class SocialSentimentService:
                                 symbol=symbol,
                                 mentions=current_mentions,
                                 mentions_24h_ago=int(current_mentions * 0.8),  # Estimate
-                                sentiment_score=item.get("sentiment", 0.0),
+                                sentiment_score=item.get("sentiment") or 0.0,
                                 rank=idx,
                                 source="wallstreetbets"
                             )
