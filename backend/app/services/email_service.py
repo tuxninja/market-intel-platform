@@ -329,11 +329,14 @@ class EmailService:
             # Sentiment indicator
             sentiment_color = "#00ff88" if sentiment > 0 else "#ff4444" if sentiment < 0 else "#888888"
 
+            # TradingView chart link
+            chart_url = f"https://www.tradingview.com/chart/?symbol={symbol}"
+
             trending_items_html.append(f"""
                 <div style="background: rgba(46, 46, 46, 0.5); padding: 12px; margin-bottom: 10px; border-radius: 6px; border-left: 3px solid {momentum_color};">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <div style="font-size: 15px; font-weight: bold; color: #e5e5ea;">
-                            #{idx} ${symbol}
+                            #{idx} <a href="{chart_url}" style="color: #00ff88; text-decoration: none;">${symbol}</a>
                         </div>
                         <div>
                             {hype_badge}
@@ -479,10 +482,18 @@ class EmailService:
 
             explanation_html += '</div>'
 
+            # Add chart link for ticker if available
+            signal_title = item.title
+            if item.symbol:
+                chart_url = f"https://www.tradingview.com/chart/?symbol={item.symbol}"
+                # Make the ticker in the title clickable
+                signal_title = signal_title.replace(f"${item.symbol}", f'<a href="{chart_url}" style="color: #00ff88; text-decoration: none;">${item.symbol}</a>')
+                signal_title = signal_title.replace(item.symbol, f'<a href="{chart_url}" style="color: #00ff88; text-decoration: none;">{item.symbol}</a>')
+
             row = f"""
             <tr>
                 <td style="text-align: center;">{idx}</td>
-                <td><strong>{item.title}</strong><br/><small>{item.summary}</small></td>
+                <td><strong>{signal_title}</strong><br/><small>{item.summary}</small></td>
                 <td>{explanation_html}</td>
                 <td style="text-align: center; font-weight: bold; color: {sentiment_color};">{sentiment_display}</td>
             </tr>

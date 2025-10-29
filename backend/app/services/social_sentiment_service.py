@@ -73,6 +73,15 @@ class SocialSentimentService:
     APEWISDOM_BASE_URL = "https://apewisdom.io/api/v1.0"
     TRADESTIE_BASE_URL = "https://tradestie.com/api/v1/apps/reddit"
 
+    # Common crypto tickers to filter out
+    CRYPTO_TICKERS = {
+        "BTC", "ETH", "DOGE", "ADA", "SOL", "XRP", "DOT", "MATIC", "LINK",
+        "UNI", "AVAX", "ATOM", "LTC", "BCH", "XLM", "ALGO", "VET", "FIL",
+        "AAVE", "COMP", "SNX", "MKR", "SUSHI", "CRV", "YFI", "BAL", "REN",
+        "BNB", "SHIB", "LUNA", "FTT", "CRO", "NEAR", "APE", "GALA", "SAND",
+        "MANA", "AXS", "ENJ", "CHZ", "BAT", "ZRX", "OMG", "KNC", "GRT"
+    }
+
     def __init__(self):
         """Initialize social sentiment service."""
         self.timeout = aiohttp.ClientTimeout(total=15)
@@ -80,7 +89,8 @@ class SocialSentimentService:
     async def get_trending_stocks(
         self,
         limit: int = 50,
-        filter_by: str = "all-crypto"  # "all-crypto" gets stocks from multiple subreddits
+        filter_by: str = "all-crypto",  # "all-crypto" gets stocks from multiple subreddits
+        exclude_crypto: bool = True
     ) -> List[SocialMention]:
         """
         Get trending stocks from Reddit communities.
@@ -88,23 +98,36 @@ class SocialSentimentService:
         Args:
             limit: Number of trending stocks to return
             filter_by: Filter type ("all-crypto" = stocks+crypto from multiple subs)
+            exclude_crypto: If True, filter out known crypto tickers
 
         Returns:
-            List of SocialMention objects sorted by mentions
+            List of SocialMention objects sorted by mentions (stocks only if exclude_crypto=True)
         """
         # Try ApeWisdom first (better data)
-        mentions = await self._fetch_apewisdom_trending(limit, filter_by)
+        mentions = await self._fetch_apewisdom_trending(limit * 2, filter_by)  # Fetch more to account for filtering
 
         if mentions:
-            logger.info(f"Got {len(mentions)} trending stocks from ApeWisdom")
-            return mentions
+            logger.info(f"Got {len(mentions)} trending items from ApeWisdom")
+
+            # Filter out crypto if requested
+            if exclude_crypto:
+                mentions = [m for m in mentions if m.symbol not in self.CRYPTO_TICKERS]
+                logger.info(f"After filtering crypto: {len(mentions)} stocks remaining")
+
+            return mentions[:limit]  # Return only requested limit
 
         # Fallback to Tradestie
-        mentions = await self._fetch_tradestie_trending(limit)
+        mentions = await self._fetch_tradestie_trending(limit * 2)  # Fetch more to account for filtering
 
         if mentions:
-            logger.info(f"Got {len(mentions)} trending stocks from Tradestie")
-            return mentions
+            logger.info(f"Got {len(mentions)} trending items from Tradestie")
+
+            # Filter out crypto if requested
+            if exclude_crypto:
+                mentions = [m for m in mentions if m.symbol not in self.CRYPTO_TICKERS]
+                logger.info(f"After filtering crypto: {len(mentions)} stocks remaining")
+
+            return mentions[:limit]  # Return only requested limit
 
         logger.warning("No social sentiment data available from any source")
         return []
