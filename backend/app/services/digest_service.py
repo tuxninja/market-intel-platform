@@ -89,8 +89,8 @@ class DigestService:
         # Fetch social sentiment data (Reddit/WallStreetBets)
         trending_social = []
         try:
-            logger.info("📱 Fetching social sentiment from Reddit/WallStreetBets")
-            social_mentions = await social_sentiment_service.get_trending_stocks(limit=50)
+            logger.info("📱 Fetching social sentiment from Reddit/WallStreetBets (stocks only)")
+            social_mentions = await social_sentiment_service.get_trending_stocks(limit=50, exclude_crypto=True)
 
             # Enrich signals with social data
             items = await self._enrich_with_social_data(items, social_mentions)
