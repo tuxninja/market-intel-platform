@@ -75,11 +75,13 @@ class SocialSentimentService:
 
     # Common crypto tickers to filter out
     CRYPTO_TICKERS = {
-        "BTC", "ETH", "DOGE", "ADA", "SOL", "XRP", "DOT", "MATIC", "LINK",
+        "BTC", "BTCX", "ETH", "DOGE", "ADA", "SOL", "XRP", "DOT", "MATIC", "LINK",
         "UNI", "AVAX", "ATOM", "LTC", "BCH", "XLM", "ALGO", "VET", "FIL",
         "AAVE", "COMP", "SNX", "MKR", "SUSHI", "CRV", "YFI", "BAL", "REN",
         "BNB", "SHIB", "LUNA", "FTT", "CRO", "NEAR", "APE", "GALA", "SAND",
-        "MANA", "AXS", "ENJ", "CHZ", "BAT", "ZRX", "OMG", "KNC", "GRT"
+        "MANA", "AXS", "ENJ", "CHZ", "BAT", "ZRX", "OMG", "KNC", "GRT",
+        "USDT", "USDC", "BUSD", "DAI", "WBTC", "WETH", "PEPE", "ARB", "OP",
+        "IMX", "LDO", "APT", "SUI", "SEI", "TIA", "INJ", "RUNE", "BLUR"
     }
 
     def __init__(self):
