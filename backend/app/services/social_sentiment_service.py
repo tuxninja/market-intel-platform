@@ -75,18 +75,50 @@ class SocialSentimentService:
 
     # Common crypto tickers to filter out
     CRYPTO_TICKERS = {
-        "BTC", "BTCX", "ETH", "DOGE", "ADA", "SOL", "XRP", "DOT", "MATIC", "LINK",
+        "BTC", "BTCX", "ETH", "ETHX", "DOGE", "ADA", "SOL", "SOLX", "XRP", "DOT", "MATIC", "LINK",
         "UNI", "AVAX", "ATOM", "LTC", "BCH", "XLM", "ALGO", "VET", "FIL",
         "AAVE", "COMP", "SNX", "MKR", "SUSHI", "CRV", "YFI", "BAL", "REN",
         "BNB", "SHIB", "LUNA", "FTT", "CRO", "NEAR", "APE", "GALA", "SAND",
         "MANA", "AXS", "ENJ", "CHZ", "BAT", "ZRX", "OMG", "KNC", "GRT",
         "USDT", "USDC", "BUSD", "DAI", "WBTC", "WETH", "PEPE", "ARB", "OP",
-        "IMX", "LDO", "APT", "SUI", "SEI", "TIA", "INJ", "RUNE", "BLUR"
+        "IMX", "LDO", "APT", "SUI", "SEI", "TIA", "INJ", "RUNE", "BLUR",
+        "ICP", "ICPX", "ZEC", "ZECX", "XMR", "DASH", "ETC", "XTZ", "QTUM"
     }
 
     def __init__(self):
         """Initialize social sentiment service."""
         self.timeout = aiohttp.ClientTimeout(total=15)
+
+    def _is_crypto_ticker(self, symbol: str) -> bool:
+        """
+        Check if a ticker is cryptocurrency.
+
+        Handles various crypto ticker formats:
+        - Direct match: BTC, ETH, etc.
+        - With suffix: BTC.X, ETH.X, etc.
+        - USD pairs: BTCUSD, ETHUSD, etc.
+
+        Args:
+            symbol: Ticker symbol to check
+
+        Returns:
+            True if crypto, False if stock
+        """
+        if not symbol:
+            return False
+
+        # Remove common suffixes (.X, -USD, etc.)
+        clean_symbol = symbol.upper().replace(".X", "").replace("-USD", "").replace("USD", "")
+
+        # Check if base symbol is in crypto list
+        if clean_symbol in self.CRYPTO_TICKERS:
+            return True
+
+        # Also check original symbol (for exact matches)
+        if symbol.upper() in self.CRYPTO_TICKERS:
+            return True
+
+        return False
 
     async def get_trending_stocks(
         self,
@@ -113,8 +145,9 @@ class SocialSentimentService:
 
             # Filter out crypto if requested
             if exclude_crypto:
-                mentions = [m for m in mentions if m.symbol not in self.CRYPTO_TICKERS]
-                logger.info(f"After filtering crypto: {len(mentions)} stocks remaining")
+                before_count = len(mentions)
+                mentions = [m for m in mentions if not self._is_crypto_ticker(m.symbol)]
+                logger.info(f"After filtering crypto: {len(mentions)} stocks remaining (removed {before_count - len(mentions)} crypto tickers)")
 
             return mentions[:limit]  # Return only requested limit
 
@@ -126,8 +159,9 @@ class SocialSentimentService:
 
             # Filter out crypto if requested
             if exclude_crypto:
-                mentions = [m for m in mentions if m.symbol not in self.CRYPTO_TICKERS]
-                logger.info(f"After filtering crypto: {len(mentions)} stocks remaining")
+                before_count = len(mentions)
+                mentions = [m for m in mentions if not self._is_crypto_ticker(m.symbol)]
+                logger.info(f"After filtering crypto: {len(mentions)} stocks remaining (removed {before_count - len(mentions)} crypto tickers)")
 
             return mentions[:limit]  # Return only requested limit
 

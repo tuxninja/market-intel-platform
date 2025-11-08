@@ -332,10 +332,6 @@ class EmailService:
             # TradingView chart link
             chart_url = f"https://www.tradingview.com/chart/?symbol={symbol}"
 
-            # FinViz chart image (daily chart with volume)
-            # Parameters: t=ticker, ty=c(candle), ta=1(enable TA), p=d(daily), s=l(large)
-            chart_image_url = f"https://finviz.com/chart.ashx?t={symbol}&ty=c&ta=1&p=d&s=l"
-
             trending_items_html.append(f"""
                 <div style="background: rgba(46, 46, 46, 0.5); padding: 12px; margin-bottom: 15px; border-radius: 6px; border-left: 3px solid {momentum_color};">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -346,15 +342,10 @@ class EmailService:
                             {hype_badge}
                         </div>
                     </div>
-                    <div style="font-size: 12px; color: #8e8e93; line-height: 1.6; margin-bottom: 10px;">
+                    <div style="font-size: 12px; color: #8e8e93; line-height: 1.6;">
                         <span style="color: #e5e5ea;">{mentions:,}</span> mentions
                         <span style="color: {momentum_color};">{momentum_emoji} {momentum:+.0f}%</span> (24h) |
                         Sentiment: <span style="color: {sentiment_color};">{sentiment:+.2f}</span>
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <a href="{chart_url}" style="display: block;">
-                            <img src="{chart_image_url}" alt="{symbol} chart" style="width: 100%; border-radius: 4px; border: 1px solid #3a3a3c;"/>
-                        </a>
                     </div>
                 </div>
             """)
