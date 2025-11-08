@@ -11,11 +11,19 @@ from typing import AsyncGenerator
 from app.config import settings
 
 # Create async engine
+# Convert DATABASE_URL from psycopg2 format to asyncpg format
+# Remove ?sslmode=require and add connect_args for SSL
+database_url = str(settings.DATABASE_URL).replace("postgresql://", "postgresql+asyncpg://")
+# Remove sslmode parameter (asyncpg doesn't support it in URL)
+if "?sslmode=" in database_url:
+    database_url = database_url.split("?sslmode=")[0]
+
 engine = create_async_engine(
-    str(settings.DATABASE_URL).replace("postgresql://", "postgresql+asyncpg://"),
+    database_url,
     pool_size=settings.DATABASE_POOL_SIZE,
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     echo=settings.DEBUG,
+    connect_args={"ssl": "require"},  # asyncpg SSL configuration
 )
 
 # Create async session factory
